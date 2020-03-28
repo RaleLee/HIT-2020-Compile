@@ -1,0 +1,12 @@
+if(s) return 1;
+else return 0;
+char s[10];
+s[1] = 'a';
+String t="";
+t ="amstl";
+float s = 1563;
+float t = 10.23e-10;
+/*bianyi154*/
+float t = 1.1;
+t = 111;
+s+=5;

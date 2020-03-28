@@ -1,0 +1,6 @@
+char s = '\t;
+String ff = "asdfg;
+/*aaf
+while(sad != 22){
+    sad++;
+}
