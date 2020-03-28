@@ -29,17 +29,20 @@ public class LexicalAnalyzer {
   // Processed word
   private String processedWord = "";
 
+  public static final String inputFilePath = "inputFile/test.txt";
+  public static final String wrongInputFilePath = "inputFile/wrong1.txt";
+  public static final String dfaFilePath = "config/dfa.txt";
+  public static final String nfaFilePath = "config/dfa.txt";//TODO: 改为nfa的路径
 
-  public LexicalAnalyzer(File file) {
-    readDFAFile(file);
+  public LexicalAnalyzer(File faFile, Boolean isNfa) {
+    readDFAFile(faFile);
   }
 
   public static void main(String[] args) throws FileNotFoundException {
-    final String inputFilePath = "inputFile/";
-    final String dfaFilePath = "config/";
-    File dfaFile = new File(dfaFilePath + "DFA.txt");
-    LexicalAnalyzer la = new LexicalAnalyzer(dfaFile);
-    File inputFile = new File(inputFilePath + "test.txt");
+
+    File dfaFile = new File(dfaFilePath);
+    LexicalAnalyzer la = new LexicalAnalyzer(dfaFile, false);
+    File inputFile = new File(inputFilePath);
     Scanner sc = new Scanner(inputFile);
     StringBuilder input = new StringBuilder();
     while (sc.hasNextLine()) {
@@ -49,14 +52,14 @@ public class LexicalAnalyzer {
     for (String s : ret) {
       System.out.print(s);
     }
-    File inputFile2 = new File(inputFilePath + "wrong1.txt");
+    File inputFile2 = new File(wrongInputFilePath);
     sc = new Scanner(inputFile2);
     input = new StringBuilder();
     while (sc.hasNextLine()) {
       input.append(sc.nextLine()).append("\n");
     }
     ret = la.Analyzer(input.toString());
-    System.out.println();
+    System.out.println("WORK END");
     for (String s : ret) {
       System.out.print(s);
     }
