@@ -125,7 +125,7 @@ public class GUI {
         outputLabel.getY() + outputLabel.getHeight() + yBlankLen, buttonWidth, buttonHeight);
     dfaLexicalAnalyzer.addActionListener(actionEvent -> {
       outputTextArea
-          .setText(String.join("", lexicalAnalyzerDFA.Analyzer(inputTextArea.getText())));
+          .setText(String.join("", lexicalAnalyzerDFA.Analyzer(inputTextArea.getText(), false)));
       //TODO:dfa显示
     });
     panel.add(dfaLexicalAnalyzer);
@@ -139,7 +139,7 @@ public class GUI {
       nfaLabel.setVisible(true);
       nfaScrollPane.setVisible(true);
       outputTextArea
-          .setText(String.join("", lexicalAnalyzerNFA.Analyzer(inputTextArea.getText())));
+          .setText(String.join("", lexicalAnalyzerNFA.Analyzer(inputTextArea.getText(), true)));
       //TODO:nfa显示
     });
     panel.add(nfaLexicalAnalyzer);
