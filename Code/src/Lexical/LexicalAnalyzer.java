@@ -30,7 +30,6 @@ public class LexicalAnalyzer {
 
   // NFA Jump Table
   Map<Integer, Map<String, Set<Integer>>> nfaTable = new HashMap<>();
-  Map<Set<Integer>, Map<String, Set<Integer>>> dfaTable = new HashMap<>();
   Map<Integer, Map<String, Integer>> dTable = new HashMap<>();
   Set<Integer> nfafinalState = new HashSet<Integer>();
   Set<Integer> dfafinalState = new HashSet<Integer>();
@@ -97,6 +96,31 @@ public class LexicalAnalyzer {
     }
   }
 
+  public List<String> showDFA(){
+    List<String> ret = new ArrayList<String>();
+    for(int i : Table.keySet()){
+      String tmp = "";
+      for(Object ss : Table.get(i).keySet()){
+        tmp += i + " " +
+                ss.toString() + " " + Table.get(i).get(ss) + "\n";
+        ret.add(tmp);
+      }
+    }
+    return ret;
+  }
+
+  public List<String> showNFA(){
+    List<String> ret = new ArrayList<String>();
+    for(int i : nfaTable.keySet()){
+      String tmp = "";
+      for(Object ss : nfaTable.get(i).keySet()){
+        tmp += i + " " +
+                ss.toString() + " " + nfaTable.get(i).get(ss) + "\n";
+        ret.add(tmp);
+      }
+    }
+    return ret;
+  }
   /**
    * Using subset construction to convert NFA to DFA.
    */
@@ -277,6 +301,7 @@ public class LexicalAnalyzer {
     }
     return ret;
   }
+
   private Integer endConvert(Map<Integer, Boolean> Dstates){
     for (Integer s: Dstates.keySet()){
         if(!Dstates.get(s)){
@@ -493,7 +518,7 @@ public class LexicalAnalyzer {
           resetTable();
           continue;
         }
-        handleWrongState(ret, index, isnfa);
+        ret = handleWrongState(ret, index, isnfa);
         if (c == '\n') {
           index -= 1;
         }
@@ -501,7 +526,7 @@ public class LexicalAnalyzer {
       } else if (curState == 0) {
         resetTable();
       } else if (i == len - 1) {
-        handleWrongState(ret, index, isnfa);
+        ret = handleWrongState(ret, index, isnfa);
       }
     }
     resetTable();
@@ -552,6 +577,7 @@ public class LexicalAnalyzer {
       }
     } else {
       tmp = "Error at line " + index + " with " + processedWord + "\n";
+      ret.add(tmp);
       System.out.println(tmp);
     }
     //char p = '\'';
