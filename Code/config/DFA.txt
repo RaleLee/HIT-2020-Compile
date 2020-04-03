@@ -3,12 +3,12 @@
 ==== 前面是中止状态，第二个是种别码，第三个是是否有属性值标志
 0 START 
 1 NUM p
-4 KXNUM p
+4 SCI-NUM p
 5 FLOAT p
 6 BSF p
 7 NOT
 8 NE
-9 FZ
+9 ASSIGN
 10 EQL
 11 ADD
 12 ++
@@ -17,7 +17,7 @@
 15 -=
 16 --
 17 BDS
-21 ZS
+21 COMMENT
 23 CHAR p
 27 STRING p
 30 NUM p
@@ -71,6 +71,7 @@ letter [a-zA-Z]
 4 digit 4
 3 digit 5
 5 digit 5
+5 e 2
 0 letter|_ 6
 6 letter|_|digit 6
 0 ! 7
@@ -88,7 +89,8 @@ letter [a-zA-Z]
 18 \* 19
 19 [^\*] 19
 19 \* 20
-20 [^\*] 19
+20 \* 20
+20 [^*/] 19
 20 / 21
 0 ' 22
 22 ' 23

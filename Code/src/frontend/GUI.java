@@ -119,21 +119,20 @@ public class GUI {
     /*
     创建按钮，绑定事件
      */
-    JButton dfaLexicalButton = new JButton("语法分析（DFA）");
+    JButton dfaLexicalButton = new JButton("词法分析（DFA）");
     dfaLexicalButton.setFont(buttonFont);
     dfaLexicalButton.setBounds(xBlankLen,
         outputLabel.getY() + outputLabel.getHeight() + yBlankLen, buttonWidth, buttonHeight);
     dfaLexicalButton.addActionListener(actionEvent -> {
       nfaLabel.setVisible(false);
       nfaScrollPane.setVisible(false);
-      System.out.println(lexicalAnalyzerDFA.Analyzer(inputTextArea.getText(), false));
       outputTextArea
           .setText(String.join("", lexicalAnalyzerDFA.Analyzer(inputTextArea.getText(), false)));
       dfaTextArea.setText(String.join("", lexicalAnalyzerDFA.showDFA()));
     });
     panel.add(dfaLexicalButton);
 
-    JButton nfaLexicalButton = new JButton("语法分析（NFA）");
+    JButton nfaLexicalButton = new JButton("词法分析（NFA）");
     nfaLexicalButton.setFont(buttonFont);
     nfaLexicalButton
         .setBounds(xBlankLen + dfaLexicalButton.getX() + dfaLexicalButton.getWidth(),
