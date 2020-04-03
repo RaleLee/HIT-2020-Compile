@@ -1,6 +1,5 @@
-package FrontEnd;
+package frontend;
 
-import Lexical.LexicalAnalyzer;
 import java.awt.Font;
 import java.io.File;
 import javax.swing.JButton;
@@ -9,6 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import lexical.LexicalAnalyzer;
 
 public class GUI {
 
@@ -119,30 +119,34 @@ public class GUI {
     /*
     创建按钮，绑定事件
      */
-    JButton dfaLexicalAnalyzer = new JButton("语法分析（DFA）");
-    dfaLexicalAnalyzer.setFont(buttonFont);
-    dfaLexicalAnalyzer.setBounds(xBlankLen,
+    JButton dfaLexicalButton = new JButton("语法分析（DFA）");
+    dfaLexicalButton.setFont(buttonFont);
+    dfaLexicalButton.setBounds(xBlankLen,
         outputLabel.getY() + outputLabel.getHeight() + yBlankLen, buttonWidth, buttonHeight);
-    dfaLexicalAnalyzer.addActionListener(actionEvent -> {
+    dfaLexicalButton.addActionListener(actionEvent -> {
+      nfaLabel.setVisible(false);
+      nfaScrollPane.setVisible(false);
+      System.out.println(lexicalAnalyzerDFA.Analyzer(inputTextArea.getText(), false));
       outputTextArea
           .setText(String.join("", lexicalAnalyzerDFA.Analyzer(inputTextArea.getText(), false)));
-      //TODO:dfa显示
+      dfaTextArea.setText(String.join("", lexicalAnalyzerDFA.showDFA()));
     });
-    panel.add(dfaLexicalAnalyzer);
+    panel.add(dfaLexicalButton);
 
-    JButton nfaLexicalAnalyzer = new JButton("语法分析（NFA）");
-    nfaLexicalAnalyzer.setFont(buttonFont);
-    nfaLexicalAnalyzer
-        .setBounds(xBlankLen + dfaLexicalAnalyzer.getX() + dfaLexicalAnalyzer.getWidth(),
+    JButton nfaLexicalButton = new JButton("语法分析（NFA）");
+    nfaLexicalButton.setFont(buttonFont);
+    nfaLexicalButton
+        .setBounds(xBlankLen + dfaLexicalButton.getX() + dfaLexicalButton.getWidth(),
             outputLabel.getY() + outputLabel.getHeight() + yBlankLen, buttonWidth, buttonHeight);
-    nfaLexicalAnalyzer.addActionListener(actionEvent -> {
+    nfaLexicalButton.addActionListener(actionEvent -> {
       nfaLabel.setVisible(true);
       nfaScrollPane.setVisible(true);
       outputTextArea
           .setText(String.join("", lexicalAnalyzerNFA.Analyzer(inputTextArea.getText(), true)));
-      //TODO:nfa显示
+      dfaTextArea.setText(String.join("", lexicalAnalyzerNFA.showDFA()));
+      nfaTextArea.setText(String.join("", lexicalAnalyzerNFA.showNFA()));
     });
-    panel.add(nfaLexicalAnalyzer);
+    panel.add(nfaLexicalButton);
 
   }
 }

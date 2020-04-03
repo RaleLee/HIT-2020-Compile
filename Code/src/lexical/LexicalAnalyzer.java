@@ -1,11 +1,11 @@
-package Lexical;
+package lexical;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -36,8 +36,8 @@ public class LexicalAnalyzer {
   // NFA Jump Table
   Map<Integer, Map<String, Set<Integer>>> nfaTable = new HashMap<>();
   Map<Integer, Map<String, Integer>> dTable = new HashMap<>();
-  Set<Integer> nfafinalState = new HashSet<Integer>();
-  Set<Integer> dfafinalState = new HashSet<Integer>();
+  public static final String nfaFilePath = "config/nfa3.txt";
+  Set<Integer> nfafinalState = new HashSet<>();
   Map<Integer, List<String>> dfaStateName = new HashMap<>();
   // Map of state name, Integer for state number, String for the recognized end state name.
   Map<Integer, String> nfaStateName = new HashMap<>();
@@ -49,7 +49,7 @@ public class LexicalAnalyzer {
   public static final String inputFilePath = "inputFile/test.txt";
   public static final String wrongInputFilePath = "inputFile/wrong1.txt";
   public static final String dfaFilePath = "config/dfa.txt";
-  public static final String nfaFilePath = "config/nfa3.txt";//TODO: 改为nfa的路径
+  Set<Integer> dfafinalState = new HashSet<>();
 
   public LexicalAnalyzer(File faFile, Boolean isNfa) {
     if (isNfa) {
@@ -102,10 +102,10 @@ public class LexicalAnalyzer {
   }
 
   public List<String> showDFA() {
-    List<String> ret = new ArrayList<String>();
+    List<String> ret = new ArrayList<>();
     for (int i : Table.keySet()) {
       String tmp = "";
-      for (Object ss : Table.get(i).keySet()) {
+      for (Pattern ss : Table.get(i).keySet()) {
         tmp += i + " " +
             ss.toString() + " " + Table.get(i).get(ss) + "\n";
         ret.add(tmp);
@@ -115,12 +115,12 @@ public class LexicalAnalyzer {
   }
 
   public List<String> showNFA() {
-    List<String> ret = new ArrayList<String>();
+    List<String> ret = new ArrayList<>();
     for (int i : nfaTable.keySet()) {
       String tmp = "";
-      for (Object ss : nfaTable.get(i).keySet()) {
+      for (String ss : nfaTable.get(i).keySet()) {
         tmp += i + " " +
-            ss.toString() + " " + nfaTable.get(i).get(ss) + "\n";
+            ss + " " + nfaTable.get(i).get(ss) + "\n";
         ret.add(tmp);
       }
     }
@@ -154,13 +154,12 @@ public class LexicalAnalyzer {
     // Compute e_closure(T)
 
     // Convert
-    Map<Integer, Boolean> DstatesVis = new HashMap<Integer, Boolean>();
+    Map<Integer, Boolean> DstatesVis = new HashMap<>();
     Map<Integer, Set<Integer>> Dstates = new HashMap<>();
     DstatesVis.put(0, false);
     Dstates.put(0, eclosure0);
     // Add final state
-    Set<Integer> tmp = new HashSet<Integer>();
-    tmp.addAll(eclosure0);
+    Set<Integer> tmp = new HashSet<>(eclosure0);
     tmp.retainAll(nfafinalState);
     if (!tmp.isEmpty()) {
       dfafinalState.add(0);
@@ -196,7 +195,7 @@ public class LexicalAnalyzer {
           tmp.retainAll(nfafinalState);
           if (!tmp.isEmpty()) {
             dfafinalState.add(num);
-            dfaStateName.put(num, new ArrayList<String>());
+            dfaStateName.put(num, new ArrayList<>());
           }
           for (Integer i : tmp) {
             if (nfaAttState.contains(i)) {
@@ -211,10 +210,8 @@ public class LexicalAnalyzer {
 //          System.out.println();
         }
         int index = -1;
-        Set set = Dstates.entrySet();
-        Iterator<Map.Entry<Integer, Set<Integer>>> iterator = set.iterator();
-        while (iterator.hasNext()) {
-          Map.Entry<Integer, Set<Integer>> entry = iterator.next();
+        Set<Map.Entry<Integer, Set<Integer>>> set = Dstates.entrySet();
+        for (Map.Entry<Integer, Set<Integer>> entry : set) {
           if (entry.getValue().equals(U)) {
             index = entry.getKey();
             break;
@@ -230,7 +227,7 @@ public class LexicalAnalyzer {
       b = DstatesVis.getOrDefault(s, true);
     }
     for (int i : dTable.keySet()) {
-      Table.put(i, new HashMap<Pattern, Integer>());
+      Table.put(i, new HashMap<>());
       for (String ss : dTable.get(i).keySet()) {
         System.out.print(i);
         System.out.print(" ");
@@ -254,7 +251,7 @@ public class LexicalAnalyzer {
     Set<Integer> ret = new HashSet<>();
     for (Integer i : T) {
       for (String s : nfaTable.get(i).keySet()) {
-        if (s.contains(ch)) {
+        if (s.equals(ch)) {
           ret.addAll(nfaTable.get(i).get(s));
         }
       }
@@ -265,8 +262,8 @@ public class LexicalAnalyzer {
   private Set<Integer> e_closureS(Integer s) {
     String epsilon = "ε";
     // Compute e_closure(s0)
-    Stack<Integer> st = new Stack<Integer>();
-    Set<Integer> e_closure = new HashSet<Integer>();
+    Stack<Integer> st = new Stack<>();
+    Set<Integer> e_closure = new HashSet<>();
     st.push(s);
     e_closure.add(s);
     while (!st.empty()) {
@@ -314,8 +311,7 @@ public class LexicalAnalyzer {
         return s;
       }
     }
-    Integer re = -1;
-    return re;
+    return -1;
   }
 
   /**
@@ -348,9 +344,7 @@ public class LexicalAnalyzer {
             break;
           }
           String[] words = line.split(" ");
-          for (String ch : words) {
-            inputChar.add(ch);
-          }
+          Collections.addAll(inputChar, words);
         }
       }
       // Read final State
@@ -390,7 +384,7 @@ public class LexicalAnalyzer {
           // Add row
           Set<Integer> set = nfaTable.get(inState).get(pat);
           if (set == null) {
-            set = new HashSet<Integer>();
+            set = new HashSet<>();
           }
           set.add(outState);
           this.nfaTable.get(inState).put(pat, set);
@@ -410,7 +404,7 @@ public class LexicalAnalyzer {
       sc.close();
 
     } catch (FileNotFoundException e) {
-      // TODO: Exception Handle
+      e.printStackTrace();
     }
   }
 
@@ -526,7 +520,7 @@ public class LexicalAnalyzer {
           resetTable();
           continue;
         }
-        ret = handleWrongState(ret, index, isnfa);
+        handleWrongState(ret, index, isnfa);
         if (c == '\n') {
           index -= 1;
         }
@@ -534,7 +528,7 @@ public class LexicalAnalyzer {
       } else if (curState == 0) {
         resetTable();
       } else if (i == len - 1) {
-        ret = handleWrongState(ret, index, isnfa);
+        handleWrongState(ret, index, isnfa);
       }
     }
     resetTable();
@@ -542,55 +536,54 @@ public class LexicalAnalyzer {
     return ret;
   }
 
-  private List<String> handleWrongState(List<String> ret, int index, boolean isnfa) {
-    String tmp;
-    Map use = null;
-    Set stat = null;
+  private void handleWrongState(List<String> ret, int index, boolean isnfa) {
+    StringBuilder tmp;
+    Map<?, ?> use;
+    Set<?> stat;
     if (isnfa) {
       use = dfaStateName;
-      stat = attState;
     } else {
       use = stateName;
-      stat = attState;
     }
+    stat = attState;
     if (use.containsKey(curState)) {
       if (constValue.contains(processedWord)) {
-        tmp = processedWord + "\t<" + processedWord.toUpperCase() + ", - >\n";
-        ret.add(tmp);
+        tmp = new StringBuilder(processedWord + "\t<" + processedWord.toUpperCase() + ", - >\n");
+        ret.add(tmp.toString());
         System.out.println(tmp);
       } else if (!stat.contains(curState)) {
         if (isnfa) {
-          tmp = processedWord + "\t<";
+          tmp = new StringBuilder(processedWord + "\t<");
           for (String ss : dfaStateName.get(curState)) {
-            tmp += ss;
+            tmp.append(ss);
           }
-          tmp += ", - >\n";
+          tmp.append(", - >\n");
         } else {
-          tmp = processedWord + "\t<" + use.get(curState) + ", - >\n";
+          tmp = new StringBuilder(processedWord + "\t<" + use.get(curState) + ", - >\n");
         }
-        ret.add(tmp);
+        ret.add(tmp.toString());
         System.out.println(tmp);
       } else {
         if (isnfa) {
-          tmp = processedWord + "\t<";
+          tmp = new StringBuilder(processedWord + "\t<");
           for (String ss : dfaStateName.get(curState)) {
-            tmp += ss;
+            tmp.append(ss);
           }
-          tmp += ", " + processedWord + ">\n";
+          tmp.append(", ").append(processedWord).append(">\n");
         } else {
-          tmp = processedWord + "\t<" + use.get(curState) + ", " + processedWord + ">\n";
+          tmp = new StringBuilder(
+              processedWord + "\t<" + use.get(curState) + ", " + processedWord + ">\n");
         }
-        ret.add(tmp);
+        ret.add(tmp.toString());
         System.out.println(tmp);
       }
     } else {
-      tmp = "Error at line " + index + " with " + processedWord + "\n";
-      ret.add(tmp);
+      tmp = new StringBuilder("Error at line " + index + " with " + processedWord + "\n");
+      ret.add(tmp.toString());
       System.out.println(tmp);
     }
     //char p = '\'';
     resetTable();
-    return ret;
   }
 
   /**
