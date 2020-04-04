@@ -143,4 +143,6 @@ string
 char
 true
 false
+record
+call
 ====
