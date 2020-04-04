@@ -1,5 +1,6 @@
 char s = '\t;
-String ff = "asdfg;
+string ff = "asdfg;
+int q=93;
 /*aaf
 while(sad != 22){
     sad++;

@@ -26,6 +26,49 @@ public class LexicalAnalyzer {
   final Map<Integer, String> stateName = new HashMap<>();
   // Current State
   private int curState = 0;
+
+  public static void main(String[] args) throws FileNotFoundException {
+
+    File nfaFile = new File(nfaFilePath);
+    LexicalAnalyzer nla = new LexicalAnalyzer(nfaFile, true);
+    File inputFile4 = new File("inputFile/correctTest.txt");
+//    Scanner sc = new Scanner(inputFile4);
+//    StringBuilder input2 = new StringBuilder();
+//    while(sc.hasNextLine()){
+//      input2.append(sc.nextLine() + "\n");
+//
+//    }
+//    List<String> ret = nla.Analyzer(input2.toString(), true);
+//    for(String s : ret){
+//      System.out.print(s);
+//    }
+
+//    File dfaFile = new File(dfaFilePath);
+//    LexicalAnalyzer la = new LexicalAnalyzer(dfaFile, false);
+//    la.showDFA();
+//    File inputFile = new File(inputFilePath);
+//    Scanner sc = new Scanner(inputFile);
+//    StringBuilder input = new StringBuilder();
+//    while (sc.hasNextLine()) {
+//      input.append(sc.nextLine()).append("\n");
+//    }
+//    List<String> ret = la.Analyzer(input.toString(), false);
+//    for (String s : ret) {
+//      System.out.print(s);
+//    }
+////    File inputFile2 = new File(wrongInputFilePath);
+////    sc = new Scanner(inputFile2);
+////    input = new StringBuilder();
+////    while (sc.hasNextLine()) {
+////      input.append(sc.nextLine()).append("\n");
+////    }
+////    ret = la.Analyzer(input.toString(), false);
+////    System.out.println("WORK END");
+////    for (String s : ret) {
+////      System.out.print(s);
+////    }
+  }
+
   // Processed word
   private String processedWord = "";
   // total State number
@@ -58,54 +101,17 @@ public class LexicalAnalyzer {
     }
   }
 
-  public static void main(String[] args) throws FileNotFoundException {
-
-//    File nfaFile = new File(nfaFilePath);
-//    LexicalAnalyzer nla = new LexicalAnalyzer(nfaFile, true);
-//    File inputFile4 = new File("inputFile/correctTest.txt");
-//    Scanner sc = new Scanner(inputFile4);
-//    StringBuilder input2 = new StringBuilder();
-//    while(sc.hasNextLine()){
-//      input2.append(sc.nextLine() + "\n");
-//
-//    }
-//    List<String> ret = nla.Analyzer(input2.toString(), true);
-//    for(String s : ret){
-//      System.out.print(s);
-//    }
-
-    File dfaFile = new File(dfaFilePath);
-    LexicalAnalyzer la = new LexicalAnalyzer(dfaFile, false);
-    File inputFile = new File(inputFilePath);
-    Scanner sc = new Scanner(inputFile);
-    StringBuilder input = new StringBuilder();
-    while (sc.hasNextLine()) {
-      input.append(sc.nextLine()).append("\n");
-    }
-    List<String> ret = la.Analyzer(input.toString(), false);
-    for (String s : ret) {
-      System.out.print(s);
-    }
-//    File inputFile2 = new File(wrongInputFilePath);
-//    sc = new Scanner(inputFile2);
-//    input = new StringBuilder();
-//    while (sc.hasNextLine()) {
-//      input.append(sc.nextLine()).append("\n");
-//    }
-//    ret = la.Analyzer(input.toString(), false);
-//    System.out.println("WORK END");
-//    for (String s : ret) {
-//      System.out.print(s);
-//    }
+  public Map<Integer, Map<String, Integer>> getdTable() {
+    return dTable;
   }
 
   public List<String> showDFA() {
     List<String> ret = new ArrayList<>();
-    for (int i : Table.keySet()) {
-      String tmp = "";
-      for (Pattern ss : Table.get(i).keySet()) {
+    for (int i : dTable.keySet()) {
+      for (String ss : dTable.get(i).keySet()) {
+        String tmp = "";
         tmp += i + " " +
-            ss.toString() + " " + Table.get(i).get(ss) + "\n";
+            ss + " " + dTable.get(i).get(ss) + "\n";
         ret.add(tmp);
       }
     }
@@ -115,8 +121,8 @@ public class LexicalAnalyzer {
   public List<String> showNFA() {
     List<String> ret = new ArrayList<>();
     for (int i : nfaTable.keySet()) {
-      String tmp = "";
       for (String ss : nfaTable.get(i).keySet()) {
+        String tmp = "";
         tmp += i + " " +
             ss + " " + nfaTable.get(i).get(ss) + "\n";
         ret.add(tmp);
@@ -428,6 +434,7 @@ public class LexicalAnalyzer {
         totStateNum = Integer.parseInt(line);
         for (int i = 0; i < totStateNum; i++) {
           this.Table.put(i, new HashMap<>());
+          this.dTable.put(i, new HashMap<>());
         }
       }
       line = sc.nextLine();
@@ -477,6 +484,7 @@ public class LexicalAnalyzer {
           System.out.println(pat);
           // Add row
           this.Table.get(inState).put(Pattern.compile(pat), outState);
+          this.dTable.get(inState).put(pat, outState);
         }
       }
       // Read const
@@ -500,7 +508,6 @@ public class LexicalAnalyzer {
     int index = 1;
     for (int i = 0; i < len; i++) {
       char c = input.charAt(i);
-      System.out.println("DEBUG:" + index + " ");
       if (c == '\n') {
         index += 1;
       }

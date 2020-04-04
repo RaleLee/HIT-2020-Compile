@@ -1,26 +1,49 @@
-if(s) return 1;
-else return 0;
-char s[10];
-s[1] = 'a';
-String t="";
-t ="amstl";
-boolean a = true;
-float t = 1.1;
-float s = 1563;
-float t = 10.23e-10;
-int oct = 0126;
-int hex = 0x1a2;
-/*bianyi154*/
-t = 111;
-s+=5;
-char ch = '\t';
-do{
-      x=x++;
-      }while( x < 20 );
-if(a++ == 1 || ++b == 2)
-     System.out.println("true");
-int _Ab123cd_w;
-int a(int b,int c)
-if(a++ == 1 || ++b == 2)
-if(a!=1 )
-if(!a)
+int _a_Int_1;
+float aFloat;
+double aDouble;
+boolean aBool;
+struct aStruct{
+  int bInt;
+  int cInt;
+};
+//标识符 类型关键字 界符;{}
+
+int function(int aVar,int bVar)
+{
+  if(aVar>bVar||aVar==bVar||aVar>=bVar)
+  {
+    return aVar+bVar;
+  }
+  else
+  {
+    do{
+      aVar++;
+      aVar+=bVar;
+      aVar*=bVar;
+      aVar/=bVar;
+      aVar%=bVar;
+    }while(aVar%2==0)
+    if(aVar<bVar&&aVar!=bVar&&aVar<=bVar)
+      return aVar-bVar;
+    if(!aVar)
+      return aVar*bVar;
+    else
+      return aVar%bVar;
+  }
+  return aVar/bVar;
+}
+//过程声明 if else分支结构 循环do while 运算符 界符=
+int aArr[10];
+aArr[1]=13;
+float bFloat=1.1;
+float cFloat=10.23e-10;
+float dFloat=10.21e10;
+float dFloat=10.22e+11;
+boolean bBool=true;
+string aStr="compile";
+char aCh='w';
+char bCh='\t';
+int octInt = 0126;
+int hexInt = 0x1a2;
+/* test comment */
+//数组界符 整数、浮点数、字符、字符串、科学计数法常数 八进制十进制整数 注释

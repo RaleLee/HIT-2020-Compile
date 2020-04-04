@@ -2,6 +2,7 @@ package frontend;
 
 import java.awt.Font;
 import java.io.File;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -19,6 +20,7 @@ public class GUI {
   public static final int labelWidth = xBlankLen * 2;
   public static final Font labelFont = new Font("微软雅黑", Font.PLAIN, 30);
   public static final Font buttonFont = new Font("微软雅黑", Font.BOLD, 25);
+  public static final Font textAreaFont = new Font("黑体", Font.PLAIN, 20);
   public static final int buttonWidth = xBlankLen * 3;
   public static final int buttonHeight = yBlankLen * 3;
 
@@ -45,11 +47,9 @@ public class GUI {
     return retLabel;
   }
 
+
   private static void placeComponents(JPanel panel) {
 
-    /* 布局部分我们这边不多做介绍
-     * 这边设置布局为 null
-     */
     panel.setLayout(null);
 
     /*
@@ -59,6 +59,7 @@ public class GUI {
     panel.add(inputLabel);
 
     JTextArea inputTextArea = new JTextArea();
+    inputTextArea.setFont(textAreaFont);
     JScrollPane inputScrollPane = new JScrollPane(inputTextArea);
     inputScrollPane
         .setBounds(inputLabel.getX() + inputLabel.getWidth(), inputLabel.getY(), textAreaWidth,
@@ -71,6 +72,7 @@ public class GUI {
     JLabel outputLabel = generateLabel("输出", xBlankLen, inputLabel.getY() + inputLabel.getHeight());
     panel.add(outputLabel);
     JTextArea outputTextArea = new JTextArea();
+    outputTextArea.setFont(textAreaFont);
     JScrollPane outputScrollPane = new JScrollPane(outputTextArea);
     outputScrollPane.setBounds(inputScrollPane.getX(),
         inputScrollPane.getY() + inputScrollPane.getHeight() + yBlankLen,
@@ -86,6 +88,7 @@ public class GUI {
     panel.add(dfaLabel);
 
     JTextArea dfaTextArea = new JTextArea();
+    dfaTextArea.setFont(textAreaFont);
     JScrollPane dfaScrollPane = new JScrollPane(dfaTextArea);
     dfaScrollPane.setBounds(dfaLabel.getX() + dfaLabel.getWidth() + xBlankLen,
         dfaLabel.getY(),
@@ -101,6 +104,7 @@ public class GUI {
     panel.add(nfaLabel);
 
     JTextArea nfaTextArea = new JTextArea();
+    nfaTextArea.setFont(textAreaFont);
     JScrollPane nfaScrollPane = new JScrollPane(nfaTextArea);
     nfaScrollPane.setBounds(nfaLabel.getX() + nfaLabel.getWidth() + xBlankLen,
         nfaLabel.getY(),
@@ -126,8 +130,9 @@ public class GUI {
     dfaLexicalButton.addActionListener(actionEvent -> {
       nfaLabel.setVisible(false);
       nfaScrollPane.setVisible(false);
+      List<String> dfaStatus = lexicalAnalyzerDFA.Analyzer(inputTextArea.getText(), false);
       outputTextArea
-          .setText(String.join("", lexicalAnalyzerDFA.Analyzer(inputTextArea.getText(), false)));
+          .setText(String.join("", dfaStatus));
       dfaTextArea.setText(String.join("", lexicalAnalyzerDFA.showDFA()));
     });
     panel.add(dfaLexicalButton);
@@ -140,12 +145,12 @@ public class GUI {
     nfaLexicalButton.addActionListener(actionEvent -> {
       nfaLabel.setVisible(true);
       nfaScrollPane.setVisible(true);
+      List<String> nfaStatus = lexicalAnalyzerNFA.Analyzer(inputTextArea.getText(), true);
       outputTextArea
-          .setText(String.join("", lexicalAnalyzerNFA.Analyzer(inputTextArea.getText(), true)));
+          .setText(String.join("", nfaStatus));
       dfaTextArea.setText(String.join("", lexicalAnalyzerNFA.showDFA()));
       nfaTextArea.setText(String.join("", lexicalAnalyzerNFA.showNFA()));
     });
     panel.add(nfaLexicalButton);
-
   }
 }
