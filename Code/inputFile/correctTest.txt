@@ -4,11 +4,23 @@ char s[10];
 s[1] = 'a';
 String t="";
 t ="amstl";
+boolean a = true;
+float t = 1.1;
 float s = 1563;
 float t = 10.23e-10;
 int oct = 0126;
 int hex = 0x1a2;
 /*bianyi154*/
-float t = 1.1;
 t = 111;
 s+=5;
+char ch = '\t';
+do{
+      x=x++;
+      }while( x < 20 );
+if(a++ == 1 || ++b == 2)
+     System.out.println("true");
+int _Ab123cd_w;
+int a(int b,int c)
+if(a++ == 1 || ++b == 2)
+if(a!=1 )
+if(!a)
