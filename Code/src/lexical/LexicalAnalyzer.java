@@ -571,14 +571,21 @@ public class LexicalAnalyzer {
         resetTable();
       } else if (i == input.length() - 1) {
         String token = processedWord;
-        Object type = null;
+        //Object type = null;
+        boolean type = false;
         if (isNfa) {
-          type = dfaStateName.get(curState);
+          List t = dfaStateName.get(curState);
+          if(t != null){
+            type = true;
+          }
         } else {
-          type = stateName.get(curState);
+          String t = stateName.get(curState);
+          if(t != null){
+            type = true;
+          }
         }
 
-        if (type != null) {
+        if (type) {
           if (constValue.contains(token)) {
             tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
             ret.add(tmpp.toString());
@@ -660,9 +667,16 @@ public class LexicalAnalyzer {
         if (c == '\n') {
           index += 1;
         }
-        if (use.containsKey(curState)) {
-          lastfinalin = i;
-          lastfinalst = curState;
+        if(isNfa){
+          if (dfaStateName.containsKey(curState)) {
+            lastfinalin = i;
+            lastfinalst = curState;
+          }
+        }else{
+          if (stateName.containsKey(curState)) {
+            lastfinalin = i;
+            lastfinalst = curState;
+          }
         }
       }
     }
