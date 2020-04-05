@@ -2,12 +2,20 @@ package frontend;
 
 import java.awt.Font;
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import lexical.LexicalAnalyzer;
 
@@ -18,7 +26,7 @@ public class GUI {
   public static final int textAreaWidth = xBlankLen * 6;
   public static final int textAreaHeight = yBlankLen * 15;
   public static final int labelWidth = xBlankLen * 2;
-  public static final Font labelFont = new Font("微软雅黑", Font.PLAIN, 30);
+  public static final Font labelFont = new Font("微软雅黑", Font.PLAIN, 25);
   public static final Font buttonFont = new Font("微软雅黑", Font.BOLD, 25);
   public static final Font textAreaFont = new Font("黑体", Font.PLAIN, 20);
   public static final int buttonWidth = xBlankLen * 3;
@@ -47,6 +55,46 @@ public class GUI {
     return retLabel;
   }
 
+
+  private static JFrame getTransTable(LexicalAnalyzer analyzer, boolean isNfa) {
+    JFrame tempFrame = new JFrame();
+    tempFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+    tempFrame.setBounds(0, 0, 1920, 1080);
+
+    JPanel tempPanel = new JPanel();
+    tempPanel.setLayout(null);
+    List<String> faTable = isNfa ? analyzer.showNFA() : analyzer.showDFA();
+    Set<String> transSet = new HashSet<>();
+    Set<Integer> initStateSet = new HashSet<>();
+    for (String faTrans : faTable) {
+      List<String> triple = Arrays.asList(faTrans.trim().split(" "));
+      initStateSet.add(Integer.parseInt(triple.get(0)));
+      transSet.add(triple.get(1));
+    }
+    Object[][] transTable = new Object[Collections.max(initStateSet) + 1][transSet.size() + 1];
+    List<String> transList = new LinkedList<>(transSet);
+    transList.sort(String::compareTo);
+    transList.add(0, "");
+    Map<String, Integer> transMap = new HashMap<>();
+    for (int ind = 0; ind < transList.size(); ind++) {
+      transMap.put(transList.get(ind), ind);
+    }
+    for (String faTrans : faTable) {
+      List<String> triple = Arrays.asList(faTrans.trim().split(" "));
+      int initState = Integer.parseInt(triple.get(0));
+      String trans = triple.get(1);
+      String target = String.join("", triple.subList(2, triple.size()));
+      transTable[initState][0] = initState;
+      transTable[initState][transMap.get(trans)] = target;
+    }
+    JTable table = new JTable(transTable, transList.toArray());
+    JScrollPane tableScrollPane = new JScrollPane(table);
+
+    table.setVisible(true);
+    tempFrame.add(tableScrollPane);
+    tempFrame.setVisible(false);
+    return tempFrame;
+  }
 
   private static void placeComponents(JPanel panel) {
 
@@ -82,7 +130,7 @@ public class GUI {
     /*
     DFA显示
      */
-    JLabel dfaLabel = generateLabel("DFA转换表:",
+    JLabel dfaLabel = generateLabel("DFA转换描述:",
         inputScrollPane.getX() + inputScrollPane.getWidth() + xBlankLen,
         inputLabel.getY());
     panel.add(dfaLabel);
@@ -98,7 +146,7 @@ public class GUI {
     /*
     NFA显示
      */
-    JLabel nfaLabel = generateLabel("NFA转换表:",
+    JLabel nfaLabel = generateLabel("NFA转换描述:",
         outputScrollPane.getX() + outputScrollPane.getWidth() + xBlankLen,
         outputLabel.getY());
     panel.add(nfaLabel);
@@ -114,12 +162,18 @@ public class GUI {
     nfaScrollPane.setVisible(false);
 
     /*
-    初始化词法分析器
+    初始化词法分析器和转换表
      */
     LexicalAnalyzer lexicalAnalyzerDFA = new LexicalAnalyzer(new File(LexicalAnalyzer.dfaFilePath),
         false);
     LexicalAnalyzer lexicalAnalyzerNFA = new LexicalAnalyzer(new File(LexicalAnalyzer.nfaFilePath),
         true);
+    JFrame dfaAnalyzerDfaTransTable = getTransTable(lexicalAnalyzerDFA, false);
+    dfaAnalyzerDfaTransTable.setTitle("词法分析（DFA）DFA转换表");
+    JFrame nfaAnalyzerDfaTransTable = getTransTable(lexicalAnalyzerNFA, false);
+    nfaAnalyzerDfaTransTable.setTitle("词法分析（NFA）DFA转换表");
+    JFrame nfaAnalyzerNfaTransTable = getTransTable(lexicalAnalyzerNFA, true);
+    nfaAnalyzerNfaTransTable.setTitle("词法分析（NFA）NFA转换表");
     /*
     创建按钮，绑定事件
      */
@@ -130,6 +184,7 @@ public class GUI {
     dfaLexicalButton.addActionListener(actionEvent -> {
       nfaLabel.setVisible(false);
       nfaScrollPane.setVisible(false);
+      dfaAnalyzerDfaTransTable.setVisible(true);
       List<String> dfaStatus = lexicalAnalyzerDFA.Analyzer(inputTextArea.getText(), false);
       outputTextArea
           .setText(String.join("", dfaStatus));
@@ -145,6 +200,8 @@ public class GUI {
     nfaLexicalButton.addActionListener(actionEvent -> {
       nfaLabel.setVisible(true);
       nfaScrollPane.setVisible(true);
+      nfaAnalyzerDfaTransTable.setVisible(true);
+      nfaAnalyzerNfaTransTable.setVisible(true);
       List<String> nfaStatus = lexicalAnalyzerNFA.Analyzer(inputTextArea.getText(), true);
       outputTextArea
           .setText(String.join("", nfaStatus));

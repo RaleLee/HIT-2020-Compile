@@ -32,16 +32,16 @@ public class LexicalAnalyzer {
     File nfaFile = new File(nfaFilePath);
     LexicalAnalyzer nla = new LexicalAnalyzer(nfaFile, true);
     File inputFile4 = new File("inputFile/correctTest.txt");
-//    Scanner sc = new Scanner(inputFile4);
-//    StringBuilder input2 = new StringBuilder();
-//    while(sc.hasNextLine()){
-//      input2.append(sc.nextLine() + "\n");
-//
-//    }
-//    List<String> ret = nla.Analyzer(input2.toString(), true);
-//    for(String s : ret){
-//      System.out.print(s);
-//    }
+    Scanner sc = new Scanner(inputFile4);
+    StringBuilder input2 = new StringBuilder();
+    while (sc.hasNextLine()) {
+      input2.append(sc.nextLine()).append("\n");
+
+    }
+    List<String> ret = nla.Analyzer(input2.toString(), true);
+    for (String s : ret) {
+      System.out.print(s);
+    }
 
 //    File dfaFile = new File(dfaFilePath);
 //    LexicalAnalyzer la = new LexicalAnalyzer(dfaFile, false);
@@ -101,9 +101,6 @@ public class LexicalAnalyzer {
     }
   }
 
-  public Map<Integer, Map<String, Integer>> getdTable() {
-    return dTable;
-  }
 
   public List<String> showDFA() {
     List<String> ret = new ArrayList<>();
@@ -501,16 +498,22 @@ public class LexicalAnalyzer {
    * @return The result of analyzer
    */
   public List<String> Analyzer(String input, boolean isNfa) {
+    input = input + "\n";
     List<String> ret = new ArrayList<>();
     List<String> error = new ArrayList<>();
     int len = input.length();
-
+    Map<?, ?> use;
+    if (isNfa) {
+      use = dfaStateName;
+    } else {
+      use = stateName;
+    }
+    StringBuilder tmpp;
     int index = 1;
+    int lastfinalin = -1;
+    int lastfinalst = -1;
     for (int i = 0; i < len; i++) {
       char c = input.charAt(i);
-      if (c == '\n') {
-        index += 1;
-      }
       // Handle the wrong state
       if (!ReadChar(c)) {
         if (curState == 0) {
@@ -518,17 +521,149 @@ public class LexicalAnalyzer {
           error.add(tmp);
           System.out.println(tmp);
           resetTable();
-          continue;
+        } else {
+          if (lastfinalin == -1) {
+            String tmp = "Error at line " + index + " with " + processedWord + c + "\n";
+            error.add(tmp);
+            System.out.println(tmp);
+            resetTable();
+            i -= 1;
+          } else {
+            String token = processedWord.substring(0,
+                processedWord.length() + lastfinalin - i + 1);
+            if (constValue.contains(token)) {
+              tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+              ret.add(tmpp.toString());
+              System.out.println(tmpp);
+            } else if (!attState.contains(lastfinalst)) {
+              if (isNfa) {
+                tmpp = new StringBuilder(token + "\t<");
+                for (String ss : dfaStateName.get(lastfinalst)) {
+                  tmpp.append(ss);
+                }
+                tmpp.append(", - >\n");
+              } else {
+                tmpp = new StringBuilder(token + "\t<" + use.get(lastfinalst) + ", - >\n");
+              }
+              ret.add(tmpp.toString());
+              System.out.println(tmpp);
+            } else {
+              if (isNfa) {
+                tmpp = new StringBuilder(token + "\t<");
+                for (String ss : dfaStateName.get(lastfinalst)) {
+                  tmpp.append(ss);
+                }
+                tmpp.append(", ").append(token).append(">\n");
+              } else {
+                tmpp = new StringBuilder(
+                    token + "\t<" + use.get(lastfinalst) + ", " + token + ">\n");
+              }
+              ret.add(tmpp.toString());
+              System.out.println(tmpp);
+            }
+            resetTable();
+            i = lastfinalin;
+            lastfinalin = -1;
+            lastfinalst = -1;
+          }
         }
-        handleWrongState(ret, index, isNfa);
-        if (c == '\n') {
-          index -= 1;
-        }
-        i -= 1;
       } else if (curState == 0) {
         resetTable();
-      } else if (i == len - 1) {
-        handleWrongState(ret, index, isNfa);
+      } else if (i == input.length() - 1) {
+        String token = processedWord;
+        Object type = null;
+        if (isNfa) {
+          type = dfaStateName.get(curState);
+        } else {
+          type = stateName.get(curState);
+        }
+
+        if (type != null) {
+          if (constValue.contains(token)) {
+            tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+            ret.add(tmpp.toString());
+            System.out.println(tmpp);
+          } else if (!attState.contains(lastfinalst)) {
+            if (isNfa) {
+              tmpp = new StringBuilder(token + "\t<");
+              for (String ss : dfaStateName.get(lastfinalst)) {
+                tmpp.append(ss);
+              }
+              tmpp.append(", - >\n");
+            } else {
+              tmpp = new StringBuilder(token + "\t<" + use.get(lastfinalst) + ", - >\n");
+            }
+            ret.add(tmpp.toString());
+            System.out.println(tmpp);
+          } else {
+            if (isNfa) {
+              tmpp = new StringBuilder(token + "\t<");
+              for (String ss : dfaStateName.get(lastfinalst)) {
+                tmpp.append(ss);
+              }
+              tmpp.append(", ").append(token).append(">\n");
+            } else {
+              tmpp = new StringBuilder(
+                  token + "\t<" + use.get(lastfinalst) + ", " + token + ">\n");
+            }
+            ret.add(tmpp.toString());
+            System.out.println(tmpp);
+          }
+        } else {
+          if (lastfinalin == -1) {
+            String tmp = "Error at line " + index + "with " + processedWord + c + "\n";
+            error.add(tmp);
+            System.out.println(tmp);
+            resetTable();
+            i -= 1;
+          } else {
+            token = processedWord.substring(0,
+                processedWord.length() + lastfinalin - i + 1);
+            if (constValue.contains(token)) {
+              tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+              ret.add(tmpp.toString());
+              System.out.println(tmpp);
+            } else if (!attState.contains(lastfinalst)) {
+              if (isNfa) {
+                tmpp = new StringBuilder(token + "\t<");
+                for (String ss : dfaStateName.get(lastfinalst)) {
+                  tmpp.append(ss);
+                }
+                tmpp.append(", - >\n");
+              } else {
+                tmpp = new StringBuilder(token + "\t<" + use.get(lastfinalst) + ", - >\n");
+              }
+              ret.add(tmpp.toString());
+              System.out.println(tmpp);
+            } else {
+              if (isNfa) {
+                tmpp = new StringBuilder(token + "\t<");
+                for (String ss : dfaStateName.get(lastfinalst)) {
+                  tmpp.append(ss);
+                }
+                tmpp.append(", ").append(token).append(">\n");
+              } else {
+                tmpp = new StringBuilder(
+                    token + "\t<" + use.get(lastfinalst) + ", " + token + ">\n");
+              }
+              ret.add(tmpp.toString());
+              System.out.println(tmpp);
+            }
+            resetTable();
+            i = lastfinalin;
+            lastfinalin = -1;
+            lastfinalst = -1;
+          }
+        }
+        resetTable();
+      } else {
+        if (c == '\n') {
+          index += 1;
+        }
+        if (use.containsKey(curState)) {
+          lastfinalin = i;
+          lastfinalst = curState;
+        }
       }
     }
     resetTable();
@@ -536,55 +671,6 @@ public class LexicalAnalyzer {
     return ret;
   }
 
-  private void handleWrongState(List<String> ret, int index, boolean isNfa) {
-    StringBuilder tmp;
-    Map<?, ?> use;
-    Set<?> stat;
-    if (isNfa) {
-      use = dfaStateName;
-    } else {
-      use = stateName;
-    }
-    stat = attState;
-    if (use.containsKey(curState)) {
-      if (constValue.contains(processedWord)) {
-        tmp = new StringBuilder(processedWord + "\t<" + processedWord.toUpperCase() + ", - >\n");
-        ret.add(tmp.toString());
-        System.out.println(tmp);
-      } else if (!stat.contains(curState)) {
-        if (isNfa) {
-          tmp = new StringBuilder(processedWord + "\t<");
-          for (String ss : dfaStateName.get(curState)) {
-            tmp.append(ss);
-          }
-          tmp.append(", - >\n");
-        } else {
-          tmp = new StringBuilder(processedWord + "\t<" + use.get(curState) + ", - >\n");
-        }
-        ret.add(tmp.toString());
-        System.out.println(tmp);
-      } else {
-        if (isNfa) {
-          tmp = new StringBuilder(processedWord + "\t<");
-          for (String ss : dfaStateName.get(curState)) {
-            tmp.append(ss);
-          }
-          tmp.append(", ").append(processedWord).append(">\n");
-        } else {
-          tmp = new StringBuilder(
-              processedWord + "\t<" + use.get(curState) + ", " + processedWord + ">\n");
-        }
-        ret.add(tmp.toString());
-        System.out.println(tmp);
-      }
-    } else {
-      tmp = new StringBuilder("Error at line " + index + " with " + processedWord + "\n");
-      ret.add(tmp.toString());
-      System.out.println(tmp);
-    }
-    //char p = '\'';
-    resetTable();
-  }
 
   /**
    * To read a char, based on current state. True means the char has been accepted, else the char is
@@ -615,3 +701,4 @@ public class LexicalAnalyzer {
     processedWord = "";
   }
 }
+
