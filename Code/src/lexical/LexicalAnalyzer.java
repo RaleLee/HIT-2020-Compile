@@ -618,11 +618,10 @@ public class LexicalAnalyzer {
           }
         } else {
           if (lastfinalin == -1) {
-            String tmp = "Error with " + processedWord + c + "\n";
+            String tmp = "Error with " + processedWord + "\n";
             error.add(tmp);
             System.out.println(tmp);
             resetTable();
-            i -= 1;
           } else {
             token = processedWord.substring(0,
                 processedWord.length() + lastfinalin - i + 1);
