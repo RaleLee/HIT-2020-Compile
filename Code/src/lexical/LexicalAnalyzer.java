@@ -517,13 +517,13 @@ public class LexicalAnalyzer {
       // Handle the wrong state
       if (!ReadChar(c)) {
         if (curState == 0) {
-          String tmp = "Error at line " + index + " with " + c + "\n";
+          String tmp = "Error with " + c + "\n";
           error.add(tmp);
           System.out.println(tmp);
           resetTable();
         } else {
           if (lastfinalin == -1) {
-            String tmp = "Error at line " + index + " with " + processedWord + c + "\n";
+            String tmp = "Error with " + processedWord + c + "\n";
             error.add(tmp);
             System.out.println(tmp);
             resetTable();
@@ -611,7 +611,7 @@ public class LexicalAnalyzer {
           }
         } else {
           if (lastfinalin == -1) {
-            String tmp = "Error at line " + index + "with " + processedWord + c + "\n";
+            String tmp = "Error with " + processedWord + c + "\n";
             error.add(tmp);
             System.out.println(tmp);
             resetTable();
