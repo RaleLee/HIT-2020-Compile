@@ -4,5 +4,8 @@
     <file url="file://$PROJECT_DIR$/../lexical/Lexical.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/../lexical/LineNumber.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/../lexical/util.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/../../src/lab2/GrammarAnalyser.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/../../src/lab2/GrammarAnalyserMaker.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/../../src/lab2/Production.java" charset="GBK" />
   </component>
 </project>

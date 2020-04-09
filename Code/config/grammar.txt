@@ -1,0 +1,12 @@
+==== start
+E
+==== terminal
++ ( ) id *
+==== non terminal
+E T E' F T'
+==== production
+E -> T E'
+E' -> + T E' | ε
+T -> F T'
+T' -> * F T' | ε
+F -> ( E ) | id
