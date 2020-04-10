@@ -7,9 +7,12 @@ public class Token {
     // attribute value
     private String attValue;
 
-    public Token(String spName, String attValue){
+    private int lineIndex;
+
+    public Token(String spName, String attValue, int lineIndex){
         this.spName = spName;
         this.attValue = attValue;
+        this.lineIndex = lineIndex;
     }
 
     public String getSpName() {
@@ -18,5 +21,15 @@ public class Token {
 
     public String getAttValue() {
         return attValue;
+    }
+
+    public int getLineIndex() {
+        return lineIndex;
+    }
+
+    @Override
+    public String toString(){
+        String att = attValue == null ? "-" : attValue;
+        return "Line "+ lineIndex + " :<"+spName + ", " + att+">";
     }
 }

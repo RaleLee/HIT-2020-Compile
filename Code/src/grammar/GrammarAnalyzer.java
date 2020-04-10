@@ -1,5 +1,7 @@
 package grammar;
 
+import lexical.LexicalAnalyzer;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -8,6 +10,7 @@ public class GrammarAnalyzer {
 
     public static String epsilon = "ε";
     public static String end = "$";
+    public static String synch = "synch";
     // Use LL1
 
     private Stack<String> analyzer = new Stack<>();
@@ -35,20 +38,83 @@ public class GrammarAnalyzer {
 
 
     public static void main(String[] args) throws Exception{
+        LexicalAnalyzer la = new LexicalAnalyzer(new File("config/DFA.txt"), false);
+        Scanner sc = new Scanner(new File("inputFile/grammertest.txt"));
+        StringBuilder input = new StringBuilder();
+        while (sc.hasNextLine()) {
+            input.append(sc.nextLine()).append("\n");
+        }
+        List<Token> test1 = la.Analyzer(input.toString());
+        for(int i = 0; i < test1.size(); i++){
+            System.out.println(test1.get(i).toString());
+        }
         List<Token> test = new ArrayList<>();
-        test.add(new Token("(", null));
-        test.add(new Token("id", null));
-        test.add(new Token("+", null));
-        test.add(new Token("id", null));
-        test.add(new Token(")", null));
-        test.add(new Token("*", null));
-        test.add(new Token("id", null));
-        test.add(new Token("$", null));
+        test.add(new Token("+", null, 1));
+        test.add(new Token("id", null,1));
+        test.add(new Token("*", null,1));
+        test.add(new Token("+", null,1));
+        test.add(new Token("id", null,1));
+//        test.add(new Token("*", null,1));
+//        test.add(new Token("id", null,1));
+        test.add(new Token("$", null,1));
 
         GrammarAnalyzer ga = new GrammarAnalyzer(new File("config/grammar.txt"));
+        List<String> ta = ga.showTable();
+        List<String> fi = ga.showFirst();
+        List<String> fo = ga.showFollow();
+        for (String s : fi) {
+            System.out.println(s);
+        }
+        for (String s : fo) {
+            System.out.println(s);
+        }
+        for (String s : ta) {
+            System.out.println(s);
+        }
         ga.Analyzer(test);
     }
 
+    public List<String> showTable(){
+        List<String> ret = new ArrayList<>();
+        for(String s : Table.keySet()){
+            Map<String, Production> map = Table.get(s);
+
+            for(String ter : map.keySet()){
+                ret.add(s + " " + ter + " " + map.get(ter).toString());
+            }
+        }
+
+        return ret;
+    }
+
+    public List<String> showFirst(){
+        List<String> ret = new ArrayList<>();
+        for(String s : firstSet.keySet()){
+            StringBuilder sb = new StringBuilder(s + " ");
+            Set<String> set = firstSet.get(s);
+            if(epsilonSymbols.contains(s)){
+                sb.append(epsilon).append(" ");
+            }
+            for(String fir : set){
+                sb.append(fir).append(" ");
+            }
+            ret.add(sb.toString());
+        }
+        return ret;
+    }
+
+    public List<String> showFollow(){
+        List<String> ret = new ArrayList<>();
+        for(String s : followSet.keySet()){
+            StringBuilder sb = new StringBuilder(s + " ");
+            Set<String> set = followSet.get(s);
+            for(String fir : set){
+                sb.append(fir).append(" ");
+            }
+            ret.add(sb.toString());
+        }
+        return ret;
+    }
     /**
      *  The constructor of Grammar Analyzer
      *
@@ -75,11 +141,11 @@ public class GrammarAnalyzer {
         List<Integer> outH = new ArrayList<>();
 
         while(!analyzer.empty()){
-            // print now
+            // print now stack and input sequence
             for(String s : analyzer){
                 System.out.print(s + " ");
             }
-            System.out.print("|");
+            System.out.print("| ");
             for(int i = index; i < lexicalOut.size(); i++){
                 System.out.print(lexicalOut.get(i).getSpName() + " ");
             }
@@ -87,16 +153,27 @@ public class GrammarAnalyzer {
 
             String curGra = analyzer.pop();
             int depth = treeDepth.pop();
-            String curLex = lexicalOut.get(index).getSpName();
+            Token curTok = lexicalOut.get(index);
+            String curLex = curTok.getSpName();
             if(curGra.equals(curLex)){
                 index++;
                 outH.add(depth);
                 outS.add(curGra);
             } else if(endSymbols.contains(curGra) || curGra.equals(end)){
-                handleWrongState();
-                System.out.println("Wrong!");
+                // 如果栈顶的终结符和输入符号不匹配，则弹出栈顶的终结符
+                System.out.println("Error at Line " + curTok.getLineIndex() + ": "
+                        + "栈顶的终结符"+ curGra + "和输入符号" + curLex +"不匹配");
+                System.out.println("采用错误恢复，弹出栈顶终结符: "+ curGra);
             } else if(Table.get(curGra).containsKey(curLex)){
+                if(Table.get(curGra).get(curLex).isSynch()){
+                    // 如果M[A,a]是synch，则弹出栈顶的非终结符A，试图继续分析后面的语法成分
+                    System.out.println("Error at Line " + curTok.getLineIndex() + ": "
+                            + "跳转表[" + curGra+ ","+ curLex +
+                            "]为synch，采用错误恢复，弹出栈顶非终结符 "+curGra);
+                    continue;
+                }
                 List<String> right = Table.get(curGra).get(curLex).getRight();
+
                 int size = right.size();
                 if(right.get(0).equals(epsilon)){
                     outH.add(depth);
@@ -110,8 +187,12 @@ public class GrammarAnalyzer {
                 outH.add(depth);
                 outS.add(curGra);
             } else {
-                handleWrongState();
-                System.out.println("Wrong!");
+                // 如果M[A,a]是空，表示检测到错误，根据恐慌模式，忽略输入符号a
+                System.out.println("Error at Line " + curTok.getLineIndex() + ": "
+                        + "跳转表[" + curGra+ ","+ curLex+"]为空，检测到错误，忽略输入符号"+curLex);
+                index++;
+                analyzer.push(curGra);
+                treeDepth.push(depth);
             }
 
         }
@@ -327,6 +408,14 @@ public class GrammarAnalyzer {
             Set<String> sel = select.get(pro);
             for(String s : sel){
                 Table.get(left).put(s, pro);
+            }
+        }
+        // Add synch
+        Production sy = new Production(synch);
+        for(String note : followSet.keySet()){
+            Set<String> syns = followSet.get(note);
+            for(String syn : syns){
+                Table.get(note).put(syn, sy);
             }
         }
     }

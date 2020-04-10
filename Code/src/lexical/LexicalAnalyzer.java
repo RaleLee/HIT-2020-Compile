@@ -1,5 +1,7 @@
 package lexical;
 
+import grammar.Token;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -91,6 +93,9 @@ public class LexicalAnalyzer {
   // All input character
   final Set<String> inputChar = new HashSet<>();
   final Set<Integer> dfaFinalState = new HashSet<>();
+  // To get the message
+  List<String> ret = new ArrayList<>();
+  List<String> error = new ArrayList<>();
 
   public LexicalAnalyzer(File faFile, Boolean isNfa) {
     if (isNfa) {
@@ -491,6 +496,119 @@ public class LexicalAnalyzer {
     }
   }
 
+
+  public List<Token> Analyzer(String input){
+    List<Token> tokens = new ArrayList<>();
+    ret = new ArrayList<>();
+    error = new ArrayList<>();
+    // line index
+    int index = 1;
+    int len = input.length();
+    int lastfinalin = -1;
+    int lastfinalst = -1;
+    StringBuilder tmpp;
+    for(int i = 0; i < len; i++){
+      char c = input.charAt(i);
+      if(!ReadChar(c)){
+        if(curState == 0){
+          String tmp = "Line " + index + ": Error with " + c + "\n";
+          error.add(tmp);
+          System.out.println(tmp);
+          resetTable();
+        } else {
+          if (lastfinalin == -1) {
+            String tmp = "Line " + index + ": Error with " + processedWord + c + "\n";
+            error.add(tmp);
+            System.out.println(tmp);
+            resetTable();
+            i -= 1;
+          } else {
+            String token = processedWord.substring(0,
+                    processedWord.length() + lastfinalin - i + 1);
+            if (constValue.contains(token)) {
+              tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+              tokens.add(new Token(token, null, index));
+            } else if (!attState.contains(lastfinalst)) {
+              tmpp = new StringBuilder(token + "\t<" + stateName.get(lastfinalst) + ", - >\n");
+              tokens.add(new Token(stateName.get(lastfinalst), null, index));
+            } else {
+              tmpp = new StringBuilder(
+                      token + "\t<" + stateName.get(lastfinalst) + ", " + token + ">\n");
+              tokens.add(new Token(stateName.get(lastfinalst), token, index));
+            }
+            ret.add(tmpp.toString());
+            System.out.println(tmpp);
+            resetTable();
+            i = lastfinalin;
+            lastfinalin = -1;
+            lastfinalst = -1;
+          }
+        }
+      } else if(curState == 0){
+        if(c == '\n')
+          index++;
+        resetTable();
+      } else if(i == len-1){
+        String token = processedWord;
+        String type = stateName.get(curState);
+        if(type != null){
+          if (constValue.contains(token)) {
+            tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+            tokens.add(new Token(token, null, index));
+          } else if (!attState.contains(lastfinalst)) {
+            tmpp = new StringBuilder(token + "\t<" + stateName.get(lastfinalst) + ", - >\n");
+            tokens.add(new Token(stateName.get(lastfinalst), null, index));
+          } else {
+            tmpp = new StringBuilder(
+                    token + "\t<" + stateName.get(lastfinalst) + ", " + token + ">\n");
+            tokens.add(new Token(stateName.get(lastfinalst), token, index));
+          }
+          ret.add(tmpp.toString());
+          System.out.println(tmpp);
+        } else {
+          if (lastfinalin == -1) {
+            String tmp = "Line " + index + ": Error with " + processedWord + "\n";
+            error.add(tmp);
+            System.out.println(tmp);
+            resetTable();
+            i -= 1;
+          } else {
+            token = processedWord.substring(0,
+                    processedWord.length() + lastfinalin - i);
+            if (constValue.contains(token)) {
+              tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+              tokens.add(new Token(token, null, index));
+            } else if (!attState.contains(lastfinalst)) {
+              tmpp = new StringBuilder(token + "\t<" + stateName.get(lastfinalst) + ", - >\n");
+              tokens.add(new Token(stateName.get(lastfinalst), null, index));
+            } else {
+              tmpp = new StringBuilder(
+                      token + "\t<" + stateName.get(lastfinalst) + ", " + token + ">\n");
+              tokens.add(new Token(stateName.get(lastfinalst), token, index));
+            }
+            ret.add(tmpp.toString());
+            System.out.println(tmpp);
+            resetTable();
+            i = lastfinalin;
+            lastfinalin = -1;
+            lastfinalst = -1;
+          }
+        }
+
+        resetTable();
+      } else {
+        if(c == '\n')
+          index++;
+        if(stateName.containsKey(curState)){
+          lastfinalin = i;
+          lastfinalst = curState;
+        }
+      }
+    }
+    resetTable();
+    return tokens;
+  }
+
   /**
    * To Analyze the input file
    *
@@ -499,8 +617,8 @@ public class LexicalAnalyzer {
    */
   public List<String> Analyzer(String input, boolean isNfa) {
     input = input + "\n";
-    List<String> ret = new ArrayList<>();
-    List<String> error = new ArrayList<>();
+    ret = new ArrayList<>();
+    error = new ArrayList<>();
     int len = input.length();
     Map<?, ?> use;
     if (isNfa) {

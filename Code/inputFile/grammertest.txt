@@ -1,0 +1,24 @@
+int function(int aVar,int bVar)
+{
+  if(aVar>bVar||aVar==bVar||aVar>=bVar)
+  {
+    return aVar+bVar;
+  }
+  else
+  {
+    do{
+      aVar++;
+      aVar+=bVar;
+      aVar*=bVar;
+      aVar/=bVar;
+      aVar%=bVar;
+    }while(aVar%2==0)
+    if(aVar<bVar&&aVar!=bVar&&aVar<=bVar)
+      return aVar-bVar;
+    if(!aVar)
+      return aVar*bVar;
+    else
+      return aVar%bVar;
+  }
+  return aVar/bVar;
+}

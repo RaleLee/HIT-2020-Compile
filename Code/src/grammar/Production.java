@@ -5,9 +5,11 @@ import java.util.List;
 public class Production {
 
     // Left part of production
-    private String left;
+    private String left = null;
     // Right part of the production
-    private List<String> right;
+    private List<String> right = null;
+
+    private String synch = null;
 
     /**
      * The constructor of Production
@@ -17,6 +19,14 @@ public class Production {
     public Production(String left, List<String> right){
         this.left = left;
         this.right = right;
+    }
+
+    public Production(String synch){
+        this.synch = "synch";
+    }
+
+    public boolean isSynch(){
+        return this.synch != null;
     }
 
     @Override
@@ -44,8 +54,12 @@ public class Production {
 
     @Override
     public String toString() {
+        if(synch != null){
+            return synch;
+        }
         StringBuilder sb = new StringBuilder();
         sb.append(this.left);
+        sb.append(" -> ");
         for(String s : right){
             sb.append(s + " ");
         }
