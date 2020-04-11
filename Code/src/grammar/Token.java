@@ -23,6 +23,10 @@ public class Token {
         return lineIndex;
     }
 
+    public String getAttValue() {
+        return attValue;
+    }
+
     @Override
     public String toString() {
         String att = attValue == null ? "-" : attValue;

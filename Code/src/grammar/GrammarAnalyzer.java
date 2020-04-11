@@ -69,17 +69,18 @@ public class GrammarAnalyzer {
     for (Token token : test1) {
       System.out.println(token.toString());
     }
-    List<Token> test = new ArrayList<>();
-    test.add(new Token("+", null, 1));
-    test.add(new Token("id", null, 1));
-    test.add(new Token("*", null, 1));
-    test.add(new Token("+", null, 1));
-    test.add(new Token("id", null, 1));
-//        test.add(new Token("*", null,1));
-//        test.add(new Token("id", null,1));
-    test.add(new Token("$", null, 1));
 
-    GrammarAnalyzer ga = new GrammarAnalyzer(new File("config/grammar.txt"));
+//    List<Token> test = new ArrayList<>();
+//    test.add(new Token("+", null, 1));
+//    test.add(new Token("id", null, 1));
+//    test.add(new Token("*", null, 1));
+//    test.add(new Token("+", null, 1));
+//    test.add(new Token("id", null, 1));
+//    test.add(new Token("*", null,1));
+//    test.add(new Token("id", null,1));
+//    test.add(new Token("$", null, 1));
+
+    GrammarAnalyzer ga = new GrammarAnalyzer(new File("config/LL1.txt"));
     List<String> ta = ga.showTable();
     List<String> fi = ga.showFirst();
     List<String> fo = ga.showFollow();
@@ -92,7 +93,7 @@ public class GrammarAnalyzer {
     for (String s : ta) {
       System.out.println(s);
     }
-    ga.Analyzer(test);
+    ga.Analyzer(test1);
   }
 
   public List<String> showTable() {
@@ -140,7 +141,7 @@ public class GrammarAnalyzer {
   public void Analyzer(List<Token> lexicalOut) {
     reset();
     int index = 0;
-    List<String> outS = new ArrayList<>();
+    List<pToken> outS = new ArrayList<>();
     List<Integer> outH = new ArrayList<>();
 
     while (!analyzer.empty()) {
@@ -161,7 +162,7 @@ public class GrammarAnalyzer {
       if (curGra.equals(curLex)) {
         index++;
         outH.add(depth);
-        outS.add(curGra);
+        outS.add(new pToken(curGra, curTok.getLineIndex(), curTok.getAttValue()));
       } else if (endSymbols.contains(curGra) || curGra.equals(end)) {
         // 如果栈顶的终结符和输入符号不匹配，则弹出栈顶的终结符
         System.out.println("Error at Line " + curTok.getLineIndex() + ": "
@@ -180,7 +181,7 @@ public class GrammarAnalyzer {
         int size = right.size();
         if (right.get(0).equals(epsilon)) {
           outH.add(depth);
-          outS.add(curGra);
+          outS.add(new pToken(curGra, curTok.getLineIndex()));
           continue;
         }
         for (int i = size - 1; i >= 0; i--) {
@@ -188,7 +189,7 @@ public class GrammarAnalyzer {
           treeDepth.push(depth + 1);
         }
         outH.add(depth);
-        outS.add(curGra);
+        outS.add(new pToken(curGra, curTok.getLineIndex()));
       } else {
         // 如果M[A,a]是空，表示检测到错误，根据恐慌模式，忽略输入符号a
         System.out.println("Error at Line " + curTok.getLineIndex() + ": "
@@ -206,7 +207,7 @@ public class GrammarAnalyzer {
       for (int j = 0; j < outH.get(i); j++) {
         if (j == outH.get(i) - 1) {
           System.out.print("┗----");
-          System.out.println(outS.get(i) + " (" + outH.get(i) + ")");
+          System.out.println(outS.get(i) /*+ " (" + outH.get(i) + ")"*/);
         } else {
           boolean isBrother = false;
           for (int k = i; k < outS.size(); k++) {
@@ -279,6 +280,7 @@ public class GrammarAnalyzer {
     for (Production pro : productions) {
       List<String> right = pro.getRight();
       if (endSymbols.contains(right.get(0))) {
+//        System.out.println(pro.getLeft());
         firstSet.get(pro.getLeft()).add(right.get(0));
       }
     }
@@ -299,6 +301,8 @@ public class GrammarAnalyzer {
           }
           // if is non terminal symbol
           else if (nonTerminals.contains(s)) {
+//            System.out.println(left+ " "+firstSet.get(left) + " "+firstSet.get(s).toString());
+            //System.out.println();
             if (!firstSet.get(left).containsAll(firstSet.get(s))) {
               firstSet.get(left).addAll(firstSet.get(s));
               isUpdate = true;
@@ -414,7 +418,8 @@ public class GrammarAnalyzer {
     for (String note : followSet.keySet()) {
       Set<String> syncSet = followSet.get(note);
       for (String syn : syncSet) {
-        Table.get(note).put(syn, sy);
+        // Find bug here, before add synch should check if null
+        Table.get(note).putIfAbsent(syn, sy);
       }
     }
   }
@@ -470,10 +475,45 @@ public class GrammarAnalyzer {
           productions.add(new Production(left, right));
         }
       }
+
+//      for(String s : nonTerminals){
+//        System.out.print(s + " ");
+//      }
+//      System.out.println();
+//      for (Production production : productions) {
+//        System.out.println(production.toString());
+//      }
       sc.close();
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
   }
 
+  private class pToken{
+    // Need print symbol
+    public String token;
+    // line number
+    public int lineIndex;
+    // attribute value
+    public String attribute = null;
+
+    public pToken(String token, int lineIndex){
+      this.token = token;
+      this.lineIndex = lineIndex;
+    }
+
+    public pToken(String token, int lineIndex, String attribute){
+      this.token = token;
+      this.lineIndex = lineIndex;
+      this.attribute = attribute;
+    }
+
+    @Override
+    public String toString(){
+      if(attribute != null){
+        return token+"("+lineIndex+")"+" :"+attribute;
+      }
+      return token+"("+lineIndex+")";
+    }
+  }
 }
