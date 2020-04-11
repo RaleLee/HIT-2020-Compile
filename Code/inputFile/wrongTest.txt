@@ -1,5 +1,5 @@
 char s = '\t;
-string ff = "asdfg;
+string ff = "happy;
 int q=93;
 /*aaf
 while(sad != 22){

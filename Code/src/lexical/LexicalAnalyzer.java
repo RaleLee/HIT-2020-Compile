@@ -1,7 +1,6 @@
 package lexical;
 
 import grammar.Token;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import java.util.regex.Pattern;
 public class LexicalAnalyzer {
 
   public static final String nfaFilePath = "config/NFA.txt";
-  public static final String inputFilePath = "inputFile/correctTest.txt";
+  //public static final String inputFilePath = "inputFile/correctTest.txt";
   //public static final String wrongInputFilePath = "inputFile/wrongTest.txt";
   public static final String dfaFilePath = "config/DFA.txt";
   // Jump Table
@@ -150,9 +149,9 @@ public class LexicalAnalyzer {
         System.out.println();
       }
     }
-    Set<Integer> eclosure0 = e_closureS(0);
+    Set<Integer> e_closure_0 = e_closureS(0);
 
-    for (Integer i : eclosure0) {
+    for (Integer i : e_closure_0) {
       System.out.print(i);
       System.out.print(" ");
     }
@@ -163,9 +162,9 @@ public class LexicalAnalyzer {
     Map<Integer, Boolean> DStatesVis = new HashMap<>();
     Map<Integer, Set<Integer>> DStates = new HashMap<>();
     DStatesVis.put(0, false);
-    DStates.put(0, eclosure0);
+    DStates.put(0, e_closure_0);
     // Add final state
-    Set<Integer> tmp = new HashSet<>(eclosure0);
+    Set<Integer> tmp = new HashSet<>(e_closure_0);
     tmp.retainAll(nfaFinalState);
     if (!tmp.isEmpty()) {
       dfaFinalState.add(0);
@@ -497,26 +496,25 @@ public class LexicalAnalyzer {
   }
 
 
-  public List<Token> Analyzer(String input){
+  public List<Token> Analyzer(String input) {
     List<Token> tokens = new ArrayList<>();
     ret = new ArrayList<>();
     error = new ArrayList<>();
     // line index
     int index = 1;
     int len = input.length();
-    int lastfinalin = -1;
-    int lastfinalst = -1;
-    StringBuilder tmpp;
-    for(int i = 0; i < len; i++){
+    int lastFinalIn = -1;
+    int lastFinalSt = -1;
+    for (int i = 0; i < len; i++) {
       char c = input.charAt(i);
-      if(!ReadChar(c)){
-        if(curState == 0){
+      if (ReadChar(c)) {
+        if (curState == 0) {
           String tmp = "Line " + index + ": Error with " + c + "\n";
           error.add(tmp);
           System.out.println(tmp);
           resetTable();
         } else {
-          if (lastfinalin == -1) {
+          if (lastFinalIn == -1) {
             String tmp = "Line " + index + ": Error with " + processedWord + c + "\n";
             error.add(tmp);
             System.out.println(tmp);
@@ -524,49 +522,26 @@ public class LexicalAnalyzer {
             i -= 1;
           } else {
             String token = processedWord.substring(0,
-                    processedWord.length() + lastfinalin - i + 1);
-            if (constValue.contains(token)) {
-              tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
-              tokens.add(new Token(token, null, index));
-            } else if (!attState.contains(lastfinalst)) {
-              tmpp = new StringBuilder(token + "\t<" + stateName.get(lastfinalst) + ", - >\n");
-              tokens.add(new Token(stateName.get(lastfinalst), null, index));
-            } else {
-              tmpp = new StringBuilder(
-                      token + "\t<" + stateName.get(lastfinalst) + ", " + token + ">\n");
-              tokens.add(new Token(stateName.get(lastfinalst), token, index));
-            }
-            ret.add(tmpp.toString());
-            System.out.println(tmpp);
+                processedWord.length() + lastFinalIn - i + 1);
+            checkToken(tokens, index, lastFinalSt, token);
             resetTable();
-            i = lastfinalin;
-            lastfinalin = -1;
-            lastfinalst = -1;
+            i = lastFinalIn;
+            lastFinalIn = -1;
+            lastFinalSt = -1;
           }
         }
-      } else if(curState == 0){
-        if(c == '\n')
+      } else if (curState == 0) {
+        if (c == '\n') {
           index++;
+        }
         resetTable();
-      } else if(i == len-1){
+      } else if (i == len - 1) {
         String token = processedWord;
         String type = stateName.get(curState);
-        if(type != null){
-          if (constValue.contains(token)) {
-            tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
-            tokens.add(new Token(token, null, index));
-          } else if (!attState.contains(lastfinalst)) {
-            tmpp = new StringBuilder(token + "\t<" + stateName.get(lastfinalst) + ", - >\n");
-            tokens.add(new Token(stateName.get(lastfinalst), null, index));
-          } else {
-            tmpp = new StringBuilder(
-                    token + "\t<" + stateName.get(lastfinalst) + ", " + token + ">\n");
-            tokens.add(new Token(stateName.get(lastfinalst), token, index));
-          }
-          ret.add(tmpp.toString());
-          System.out.println(tmpp);
+        if (type != null) {
+          checkToken(tokens, index, lastFinalSt, token);
         } else {
-          if (lastfinalin == -1) {
+          if (lastFinalIn == -1) {
             String tmp = "Line " + index + ": Error with " + processedWord + "\n";
             error.add(tmp);
             System.out.println(tmp);
@@ -574,39 +549,45 @@ public class LexicalAnalyzer {
             i -= 1;
           } else {
             token = processedWord.substring(0,
-                    processedWord.length() + lastfinalin - i);
-            if (constValue.contains(token)) {
-              tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
-              tokens.add(new Token(token, null, index));
-            } else if (!attState.contains(lastfinalst)) {
-              tmpp = new StringBuilder(token + "\t<" + stateName.get(lastfinalst) + ", - >\n");
-              tokens.add(new Token(stateName.get(lastfinalst), null, index));
-            } else {
-              tmpp = new StringBuilder(
-                      token + "\t<" + stateName.get(lastfinalst) + ", " + token + ">\n");
-              tokens.add(new Token(stateName.get(lastfinalst), token, index));
-            }
-            ret.add(tmpp.toString());
-            System.out.println(tmpp);
+                processedWord.length() + lastFinalIn - i);
+            checkToken(tokens, index, lastFinalSt, token);
             resetTable();
-            i = lastfinalin;
-            lastfinalin = -1;
-            lastfinalst = -1;
+            i = lastFinalIn;
+            lastFinalIn = -1;
+            lastFinalSt = -1;
           }
         }
 
         resetTable();
       } else {
-        if(c == '\n')
+        if (c == '\n') {
           index++;
-        if(stateName.containsKey(curState)){
-          lastfinalin = i;
-          lastfinalst = curState;
+        }
+        if (stateName.containsKey(curState)) {
+          lastFinalIn = i;
+          lastFinalSt = curState;
         }
       }
     }
     resetTable();
     return tokens;
+  }
+
+  private void checkToken(List<Token> tokens, int index, int lastFinalSt, String token) {
+    StringBuilder tmpSB;
+    if (constValue.contains(token)) {
+      tmpSB = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+      tokens.add(new Token(token, null, index));
+    } else if (!attState.contains(lastFinalSt)) {
+      tmpSB = new StringBuilder(token + "\t<" + stateName.get(lastFinalSt) + ", - >\n");
+      tokens.add(new Token(stateName.get(lastFinalSt), null, index));
+    } else {
+      tmpSB = new StringBuilder(
+          token + "\t<" + stateName.get(lastFinalSt) + ", " + token + ">\n");
+      tokens.add(new Token(stateName.get(lastFinalSt), token, index));
+    }
+    ret.add(tmpSB.toString());
+    System.out.println(tmpSB);
   }
 
   /**
@@ -626,21 +607,21 @@ public class LexicalAnalyzer {
     } else {
       use = stateName;
     }
-    StringBuilder tmpp;
+    StringBuilder tmpSB;
     int index = 1;
-    int lastfinalin = -1;
-    int lastfinalst = -1;
+    int lastFinalIn = -1;
+    int lastFinalSt = -1;
     for (int i = 0; i < len; i++) {
       char c = input.charAt(i);
       // Handle the wrong state
-      if (!ReadChar(c)) {
+      if (ReadChar(c)) {
         if (curState == 0) {
           String tmp = "Error with " + c + "\n";
           error.add(tmp);
           System.out.println(tmp);
           resetTable();
         } else {
-          if (lastfinalin == -1) {
+          if (lastFinalIn == -1) {
             String tmp = "Error with " + processedWord + c + "\n";
             error.add(tmp);
             System.out.println(tmp);
@@ -648,41 +629,41 @@ public class LexicalAnalyzer {
             i -= 1;
           } else {
             String token = processedWord.substring(0,
-                processedWord.length() + lastfinalin - i + 1);
+                processedWord.length() + lastFinalIn - i + 1);
             if (constValue.contains(token)) {
-              tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
-              ret.add(tmpp.toString());
-              System.out.println(tmpp);
-            } else if (!attState.contains(lastfinalst)) {
+              tmpSB = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+              ret.add(tmpSB.toString());
+              System.out.println(tmpSB);
+            } else if (!attState.contains(lastFinalSt)) {
               if (isNfa) {
-                tmpp = new StringBuilder(token + "\t<");
-                for (String ss : dfaStateName.get(lastfinalst)) {
-                  tmpp.append(ss);
+                tmpSB = new StringBuilder(token + "\t<");
+                for (String ss : dfaStateName.get(lastFinalSt)) {
+                  tmpSB.append(ss);
                 }
-                tmpp.append(", - >\n");
+                tmpSB.append(", - >\n");
               } else {
-                tmpp = new StringBuilder(token + "\t<" + use.get(lastfinalst) + ", - >\n");
+                tmpSB = new StringBuilder(token + "\t<" + use.get(lastFinalSt) + ", - >\n");
               }
-              ret.add(tmpp.toString());
-              System.out.println(tmpp);
+              ret.add(tmpSB.toString());
+              System.out.println(tmpSB);
             } else {
               if (isNfa) {
-                tmpp = new StringBuilder(token + "\t<");
-                for (String ss : dfaStateName.get(lastfinalst)) {
-                  tmpp.append(ss);
+                tmpSB = new StringBuilder(token + "\t<");
+                for (String ss : dfaStateName.get(lastFinalSt)) {
+                  tmpSB.append(ss);
                 }
-                tmpp.append(", ").append(token).append(">\n");
+                tmpSB.append(", ").append(token).append(">\n");
               } else {
-                tmpp = new StringBuilder(
-                    token + "\t<" + use.get(lastfinalst) + ", " + token + ">\n");
+                tmpSB = new StringBuilder(
+                    token + "\t<" + use.get(lastFinalSt) + ", " + token + ">\n");
               }
-              ret.add(tmpp.toString());
-              System.out.println(tmpp);
+              ret.add(tmpSB.toString());
+              System.out.println(tmpSB);
             }
             resetTable();
-            i = lastfinalin;
-            lastfinalin = -1;
-            lastfinalst = -1;
+            i = lastFinalIn;
+            lastFinalIn = -1;
+            lastFinalSt = -1;
           }
         }
       } else if (curState == 0) {
@@ -692,91 +673,91 @@ public class LexicalAnalyzer {
         //Object type = null;
         boolean type = false;
         if (isNfa) {
-          List t = dfaStateName.get(curState);
-          if(t != null){
+          List<String> t = dfaStateName.get(curState);
+          if (t != null) {
             type = true;
           }
         } else {
           String t = stateName.get(curState);
-          if(t != null){
+          if (t != null) {
             type = true;
           }
         }
 
         if (type) {
           if (constValue.contains(token)) {
-            tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
-            ret.add(tmpp.toString());
-            System.out.println(tmpp);
-          } else if (!attState.contains(lastfinalst)) {
+            tmpSB = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+            ret.add(tmpSB.toString());
+            System.out.println(tmpSB);
+          } else if (!attState.contains(lastFinalSt)) {
             if (isNfa) {
-              tmpp = new StringBuilder(token + "\t<");
-              for (String ss : dfaStateName.get(lastfinalst)) {
-                tmpp.append(ss);
+              tmpSB = new StringBuilder(token + "\t<");
+              for (String ss : dfaStateName.get(lastFinalSt)) {
+                tmpSB.append(ss);
               }
-              tmpp.append(", - >\n");
+              tmpSB.append(", - >\n");
             } else {
-              tmpp = new StringBuilder(token + "\t<" + use.get(lastfinalst) + ", - >\n");
+              tmpSB = new StringBuilder(token + "\t<" + use.get(lastFinalSt) + ", - >\n");
             }
-            ret.add(tmpp.toString());
-            System.out.println(tmpp);
+            ret.add(tmpSB.toString());
+            System.out.println(tmpSB);
           } else {
             if (isNfa) {
-              tmpp = new StringBuilder(token + "\t<");
-              for (String ss : dfaStateName.get(lastfinalst)) {
-                tmpp.append(ss);
+              tmpSB = new StringBuilder(token + "\t<");
+              for (String ss : dfaStateName.get(lastFinalSt)) {
+                tmpSB.append(ss);
               }
-              tmpp.append(", ").append(token).append(">\n");
+              tmpSB.append(", ").append(token).append(">\n");
             } else {
-              tmpp = new StringBuilder(
-                  token + "\t<" + use.get(lastfinalst) + ", " + token + ">\n");
+              tmpSB = new StringBuilder(
+                  token + "\t<" + use.get(lastFinalSt) + ", " + token + ">\n");
             }
-            ret.add(tmpp.toString());
-            System.out.println(tmpp);
+            ret.add(tmpSB.toString());
+            System.out.println(tmpSB);
           }
         } else {
-          if (lastfinalin == -1) {
+          if (lastFinalIn == -1) {
             String tmp = "Error with " + processedWord + "\n";
             error.add(tmp);
             System.out.println(tmp);
             resetTable();
           } else {
             token = processedWord.substring(0,
-                processedWord.length() + lastfinalin - i + 1);
+                processedWord.length() + lastFinalIn - i + 1);
             if (constValue.contains(token)) {
-              tmpp = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
-              ret.add(tmpp.toString());
-              System.out.println(tmpp);
-            } else if (!attState.contains(lastfinalst)) {
+              tmpSB = new StringBuilder(token + "\t<" + token.toUpperCase() + ", - >\n");
+              ret.add(tmpSB.toString());
+              System.out.println(tmpSB);
+            } else if (!attState.contains(lastFinalSt)) {
               if (isNfa) {
-                tmpp = new StringBuilder(token + "\t<");
-                for (String ss : dfaStateName.get(lastfinalst)) {
-                  tmpp.append(ss);
+                tmpSB = new StringBuilder(token + "\t<");
+                for (String ss : dfaStateName.get(lastFinalSt)) {
+                  tmpSB.append(ss);
                 }
-                tmpp.append(", - >\n");
+                tmpSB.append(", - >\n");
               } else {
-                tmpp = new StringBuilder(token + "\t<" + use.get(lastfinalst) + ", - >\n");
+                tmpSB = new StringBuilder(token + "\t<" + use.get(lastFinalSt) + ", - >\n");
               }
-              ret.add(tmpp.toString());
-              System.out.println(tmpp);
+              ret.add(tmpSB.toString());
+              System.out.println(tmpSB);
             } else {
               if (isNfa) {
-                tmpp = new StringBuilder(token + "\t<");
-                for (String ss : dfaStateName.get(lastfinalst)) {
-                  tmpp.append(ss);
+                tmpSB = new StringBuilder(token + "\t<");
+                for (String ss : dfaStateName.get(lastFinalSt)) {
+                  tmpSB.append(ss);
                 }
-                tmpp.append(", ").append(token).append(">\n");
+                tmpSB.append(", ").append(token).append(">\n");
               } else {
-                tmpp = new StringBuilder(
-                    token + "\t<" + use.get(lastfinalst) + ", " + token + ">\n");
+                tmpSB = new StringBuilder(
+                    token + "\t<" + use.get(lastFinalSt) + ", " + token + ">\n");
               }
-              ret.add(tmpp.toString());
-              System.out.println(tmpp);
+              ret.add(tmpSB.toString());
+              System.out.println(tmpSB);
             }
             resetTable();
-            i = lastfinalin;
-            lastfinalin = -1;
-            lastfinalst = -1;
+            i = lastFinalIn;
+            lastFinalIn = -1;
+            lastFinalSt = -1;
           }
         }
         resetTable();
@@ -784,15 +765,15 @@ public class LexicalAnalyzer {
         if (c == '\n') {
           index += 1;
         }
-        if(isNfa){
+        if (isNfa) {
           if (dfaStateName.containsKey(curState)) {
-            lastfinalin = i;
-            lastfinalst = curState;
+            lastFinalIn = i;
+            lastFinalSt = curState;
           }
-        }else{
+        } else {
           if (stateName.containsKey(curState)) {
-            lastfinalin = i;
-            lastfinalst = curState;
+            lastFinalIn = i;
+            lastFinalSt = curState;
           }
         }
       }
@@ -808,7 +789,8 @@ public class LexicalAnalyzer {
    * a wrong char.
    *
    * @param c The char that need be matched.
-   * @return true if there is a pattern matched the char, else false.
+   * @return false if there is a pattern matched the char, else true.//TODO : FIX true and false
+   * here
    */
   public boolean ReadChar(char c) {
     Map<Pattern, Integer> jumper = Table.get(curState);
@@ -818,10 +800,10 @@ public class LexicalAnalyzer {
         processedWord += c;
         curState = jumper.get(p);
         System.out.println("Read:" + c + " Current State is: " + curState);
-        return true;
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   /**

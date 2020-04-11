@@ -3,13 +3,13 @@ package grammar;
 public class Token {
 
     // species name
-    private String spName;
+    private final String spName;
     // attribute value
-    private String attValue;
+    private final String attValue;
 
-    private int lineIndex;
+    private final int lineIndex;
 
-    public Token(String spName, String attValue, int lineIndex){
+    public Token(String spName, String attValue, int lineIndex) {
         this.spName = spName;
         this.attValue = attValue;
         this.lineIndex = lineIndex;
@@ -19,17 +19,13 @@ public class Token {
         return spName;
     }
 
-    public String getAttValue() {
-        return attValue;
-    }
-
     public int getLineIndex() {
         return lineIndex;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         String att = attValue == null ? "-" : attValue;
-        return "Line "+ lineIndex + " :<"+spName + ", " + att+">";
+        return "Line " + lineIndex + " :<" + spName + ", " + att + ">";
     }
 }
