@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
+
+import javafx.util.Pair;
 import lexical.LexicalAnalyzer;
 
 public class GrammarAnalyzer {
@@ -37,6 +39,10 @@ public class GrammarAnalyzer {
   private Stack<Integer> treeDepth = new Stack<>();
   // Start symbol
   private String start;
+  // Standard out put in instruct book
+  private List<String> stardOut = new ArrayList<>();
+  // Error Message
+  private List<String> errorMessage = new ArrayList<>();
 
 
   /**
@@ -84,6 +90,7 @@ public class GrammarAnalyzer {
     List<String> ta = ga.showTable();
     List<String> fi = ga.showFirst();
     List<String> fo = ga.showFollow();
+    List<String> st = ga.getStardOut();
     for (String s : fi) {
       System.out.println(s);
     }
@@ -94,6 +101,9 @@ public class GrammarAnalyzer {
       System.out.println(s);
     }
     ga.Analyzer(test1);
+    for (String s : st){
+      System.out.println(s);
+    }
   }
 
   public List<String> showTable() {
@@ -138,11 +148,28 @@ public class GrammarAnalyzer {
     return ret;
   }
 
-  public void Analyzer(List<Token> lexicalOut) {
+  public List<String> getStardOut(){
+    return stardOut;
+  }
+
+  public List<String> getErrorMessage() {
+    return errorMessage;
+  }
+
+  /**
+   * 进行语法分析
+   * @param lexicalOut 词法分析器的结果，List<Token>形式.
+   * @return 返回一个Ptoken和在树中的深度，是一一对应的关系，用于GUI画树
+   */
+  public Pair<List<PToken>, List<Integer>> Analyzer(List<Token> lexicalOut) {
     reset();
     int index = 0;
-    List<pToken> outS = new ArrayList<>();
+    // 这一组用于存储不含有epsilon的
+    List<PToken> outS = new ArrayList<>();
     List<Integer> outH = new ArrayList<>();
+    // 这一组用于存储含有epsilon的
+    List<PToken> outIE = new ArrayList<>();
+    List<Integer> outIEH = new ArrayList<>();
 
     while (!analyzer.empty()) {
       // print now stack and input sequence
@@ -162,26 +189,37 @@ public class GrammarAnalyzer {
       if (curGra.equals(curLex)) {
         index++;
         outH.add(depth);
-        outS.add(new pToken(curGra, curTok.getLineIndex(), curTok.getAttValue()));
+        outS.add(new PToken(curGra, curTok.getLineIndex(), curTok.getAttValue()));
+        outIE.add(new PToken(curGra, curTok.getLineIndex(), curTok.getAttValue()));
+        outIEH.add(depth);
       } else if (endSymbols.contains(curGra) || curGra.equals(end)) {
         // 如果栈顶的终结符和输入符号不匹配，则弹出栈顶的终结符
         System.out.println("Error at Line " + curTok.getLineIndex() + ": "
             + "栈顶的终结符" + curGra + "和输入符号" + curLex + "不匹配");
+        errorMessage.add("Error at Line " + curTok.getLineIndex() + ": "
+                + "栈顶的终结符" + curGra + "和输入符号" + curLex + "不匹配");
         System.out.println("采用错误恢复，弹出栈顶终结符: " + curGra);
+        errorMessage.add("采用错误恢复，弹出栈顶终结符: " + curGra);
       } else if (Table.get(curGra).containsKey(curLex)) {
         if (Table.get(curGra).get(curLex).getSync()) {
           // 如果M[A,a]是sync，则弹出栈顶的非终结符A，试图继续分析后面的语法成分
           System.out.println("Error at Line " + curTok.getLineIndex() + ": "
               + "跳转表[" + curGra + "," + curLex +
               "]为sync，采用错误恢复，弹出栈顶非终结符 " + curGra);
+          errorMessage.add("Error at Line " + curTok.getLineIndex() + ": "
+                  + "跳转表[" + curGra + "," + curLex +
+                  "]为sync，采用错误恢复，弹出栈顶非终结符 " + curGra);
           continue;
         }
         List<String> right = Table.get(curGra).get(curLex).getRight();
 
         int size = right.size();
         if (right.get(0).equals(epsilon)) {
-          outH.add(depth);
-          outS.add(new pToken(curGra, curTok.getLineIndex()));
+          // 为了不打印产生epsilon的符号，这里就不将其加入输出队列中了
+          // 不对，因为要画树出来，还是得加，但是输出的时候判断一下不输出就行
+          // 这里用两个List存吧，一个是含有epsilon的，一个是不含有的
+          outIEH.add(depth);
+          outIE.add(new PToken(curGra, curTok.getLineIndex()));
           continue;
         }
         for (int i = size - 1; i >= 0; i--) {
@@ -189,25 +227,34 @@ public class GrammarAnalyzer {
           treeDepth.push(depth + 1);
         }
         outH.add(depth);
-        outS.add(new pToken(curGra, curTok.getLineIndex()));
+        outS.add(new PToken(curGra, curTok.getLineIndex()));
+        outIEH.add(depth);
+        outIE.add(new PToken(curGra, curTok.getLineIndex()));
       } else {
         // 如果M[A,a]是空，表示检测到错误，根据恐慌模式，忽略输入符号a
         System.out.println("Error at Line " + curTok.getLineIndex() + ": "
             + "跳转表[" + curGra + "," + curLex + "]为空，检测到错误，忽略输入符号" + curLex);
+        errorMessage.add("Error at Line " + curTok.getLineIndex() + ": "
+                + "跳转表[" + curGra + "," + curLex + "]为空，检测到错误，忽略输入符号" + curLex);
         index++;
         analyzer.push(curGra);
         treeDepth.push(depth);
       }
-
     }
 
     // Print the tree
-    System.out.println(outS.get(0) + " (" + outH.get(0) + ")");
+    System.out.println(outS.get(0) /*+ " (" + outH.get(0) + ")"*/);
+    stardOut.add(outS.get(0).toString());
     for (int i = 0; i < outS.size() - 1; i++) {
+      StringBuilder sb = new StringBuilder();
       for (int j = 0; j < outH.get(i); j++) {
         if (j == outH.get(i) - 1) {
-          System.out.print("┗----");
+          System.out.print("  ");
+          sb.append("  ");
+//          System.out.print("┗----");
           System.out.println(outS.get(i) /*+ " (" + outH.get(i) + ")"*/);
+          sb.append(outS.get(i).toString());
+          stardOut.add(sb.toString());
         } else {
           boolean isBrother = false;
           for (int k = i; k < outS.size(); k++) {
@@ -218,14 +265,20 @@ public class GrammarAnalyzer {
               break;
             }
           }
-          if (isBrother) {
-            System.out.print("|    ");
-          } else {
-            System.out.print("     ");
-          }
+          System.out.print("  ");
+          sb.append("  ");
+          // 这里暂时修改，是为了按照指导书的样式输出
+//          if (isBrother) {
+//            System.out.print("  ");
+////            System.out.print("|    ");
+//          } else {
+//            System.out.print("  ");
+////            System.out.print("     ");
+//          }
         }
       }
     }
+    return new Pair<>(outIE, outIEH);
   }
 
 
@@ -459,6 +512,8 @@ public class GrammarAnalyzer {
         while (sc.hasNextLine()) {
           line = sc.nextLine();
           String[] pro = line.split("->");
+          System.out.println(line);
+          System.out.println(pro[0]);
           // left part
           String left = pro[0].strip();
           // right part
@@ -486,34 +541,6 @@ public class GrammarAnalyzer {
       sc.close();
     } catch (FileNotFoundException e) {
       e.printStackTrace();
-    }
-  }
-
-  private class pToken{
-    // Need print symbol
-    public String token;
-    // line number
-    public int lineIndex;
-    // attribute value
-    public String attribute = null;
-
-    public pToken(String token, int lineIndex){
-      this.token = token;
-      this.lineIndex = lineIndex;
-    }
-
-    public pToken(String token, int lineIndex, String attribute){
-      this.token = token;
-      this.lineIndex = lineIndex;
-      this.attribute = attribute;
-    }
-
-    @Override
-    public String toString(){
-      if(attribute != null){
-        return token+"("+lineIndex+")"+" :"+attribute;
-      }
-      return token+"("+lineIndex+")";
     }
   }
 }
