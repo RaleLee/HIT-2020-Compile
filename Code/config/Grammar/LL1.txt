@@ -26,6 +26,7 @@ Elist -> E Elist'
 Elist' -> , E Elist' | ε
 M -> X IDENTIFIER M' | ε
 M' -> , X IDENTIFIER M' | ε
-E -> SUB E E' | ( E ) E' | STRING E' | L E'
+E -> SUB E E' | ( E ) E' | STRING E' | L E' | NUM E'
 E' -> ADD E E' | * E E' | SUB E E' | ε
 F -> ( E ) | IDENTIFIER | CHAR | STRING | NUM | SCI-NUM | FLOAT
+
