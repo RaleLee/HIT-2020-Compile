@@ -11,12 +11,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
-
 import javafx.util.Pair;
 import lexical.LexicalAnalyzer;
 
 public class GrammarAnalyzer {
 
+  public static final String grammarPath = "config\\LL1.txt";
+  public static final String correctTestPath = "inputFile\\grammarTest\\grammarCorrectTest.txt";
   public static final String epsilon = "ε";
   public static final String end = "$";
   // Use LL1
@@ -25,10 +26,69 @@ public class GrammarAnalyzer {
   private final Map<String, Map<String, Production>> Table = new HashMap<>();
   // End symbol
   private final Set<String> endSymbols = new HashSet<>();
+
+
   // Non Terminal symbols
   private final Set<String> nonTerminals = new HashSet<>();
   // epsilon set
   private final Set<String> epsilonSymbols = new HashSet<>();
+  // Standard out put in instruct book
+  private final List<String> standardOut = new ArrayList<>();
+  // Error Message
+  private final List<String> errorMessage = new ArrayList<>();
+
+  public static List<Token> getTokensFromPath(String inputPath) {
+    LexicalAnalyzer la = new LexicalAnalyzer(new File(LexicalAnalyzer.dfaFilePath), false);
+    StringBuilder programInput = new StringBuilder();
+    try {
+      Scanner sc = new Scanner(new File(inputPath));
+
+      while (sc.hasNextLine()) {
+        programInput.append(sc.nextLine()).append("\n");
+      }
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    return la.Analyzer(programInput.toString());
+  }
+
+  public static void main(String[] args) {
+
+//    List<Token> test = new ArrayList<>();
+//    test.add(new Token("+", null, 1));
+//    test.add(new Token("id", null, 1));
+//    test.add(new Token("*", null, 1));
+//    test.add(new Token("+", null, 1));
+//    test.add(new Token("id", null, 1));
+//    test.add(new Token("*", null,1));
+//    test.add(new Token("id", null,1));
+//    test.add(new Token("$", null, 1));
+
+    GrammarAnalyzer ga = new GrammarAnalyzer(new File(grammarPath));
+    List<String> ta = ga.showTable();
+    List<String> fi = ga.showFirst();
+    List<String> fo = ga.showFollow();
+    List<String> st = ga.getStandardOut();
+    for (String s : fi) {
+      System.out.println(s);
+    }
+    for (String s : fo) {
+      System.out.println(s);
+    }
+    for (String s : ta) {
+      System.out.println(s);
+    }
+    ga.Analyzer(getTokensFromPath(correctTestPath));
+    for (String s : st) {
+      System.out.println(s);
+    }
+  }
+
+  public Set<String> getEndSymbols() {
+    return endSymbols;
+  }
+
+
   // First set
   private final Map<String, Set<String>> firstSet = new HashMap<>();
   // Follow set
@@ -39,10 +99,14 @@ public class GrammarAnalyzer {
   private Stack<Integer> treeDepth = new Stack<>();
   // Start symbol
   private String start;
-  // Standard out put in instruct book
-  private List<String> stardOut = new ArrayList<>();
-  // Error Message
-  private List<String> errorMessage = new ArrayList<>();
+
+  public Set<String> getNonTerminals() {
+    return nonTerminals;
+  }
+
+  public Map<String, Set<String>> getFirstSet() {
+    return firstSet;
+  }
 
 
   /**
@@ -64,46 +128,12 @@ public class GrammarAnalyzer {
     creTable();
   }
 
-  public static void main(String[] args) throws Exception {
-    LexicalAnalyzer la = new LexicalAnalyzer(new File("config/DFA.txt"), false);
-    Scanner sc = new Scanner(new File("inputFile/grammarTest.txt"));
-    StringBuilder input = new StringBuilder();
-    while (sc.hasNextLine()) {
-      input.append(sc.nextLine()).append("\n");
-    }
-    List<Token> test1 = la.Analyzer(input.toString());
-    for (Token token : test1) {
-      System.out.println(token.toString());
-    }
+  public Map<String, Set<String>> getFollowSet() {
+    return followSet;
+  }
 
-//    List<Token> test = new ArrayList<>();
-//    test.add(new Token("+", null, 1));
-//    test.add(new Token("id", null, 1));
-//    test.add(new Token("*", null, 1));
-//    test.add(new Token("+", null, 1));
-//    test.add(new Token("id", null, 1));
-//    test.add(new Token("*", null,1));
-//    test.add(new Token("id", null,1));
-//    test.add(new Token("$", null, 1));
-
-    GrammarAnalyzer ga = new GrammarAnalyzer(new File("config/LL1.txt"));
-    List<String> ta = ga.showTable();
-    List<String> fi = ga.showFirst();
-    List<String> fo = ga.showFollow();
-    List<String> st = ga.getStardOut();
-    for (String s : fi) {
-      System.out.println(s);
-    }
-    for (String s : fo) {
-      System.out.println(s);
-    }
-    for (String s : ta) {
-      System.out.println(s);
-    }
-    ga.Analyzer(test1);
-    for (String s : st){
-      System.out.println(s);
-    }
+  public Map<String, Map<String, Production>> getTable() {
+    return Table;
   }
 
   public List<String> showTable() {
@@ -148,8 +178,8 @@ public class GrammarAnalyzer {
     return ret;
   }
 
-  public List<String> getStardOut(){
-    return stardOut;
+  public List<String> getStandardOut() {
+    return standardOut;
   }
 
   public List<String> getErrorMessage() {
@@ -158,6 +188,7 @@ public class GrammarAnalyzer {
 
   /**
    * 进行语法分析
+   *
    * @param lexicalOut 词法分析器的结果，List<Token>形式.
    * @return 返回一个Ptoken和在树中的深度，是一一对应的关系，用于GUI画树
    */
@@ -197,7 +228,7 @@ public class GrammarAnalyzer {
         System.out.println("Error at Line " + curTok.getLineIndex() + ": "
             + "栈顶的终结符" + curGra + "和输入符号" + curLex + "不匹配");
         errorMessage.add("Error at Line " + curTok.getLineIndex() + ": "
-                + "栈顶的终结符" + curGra + "和输入符号" + curLex + "不匹配");
+            + "栈顶的终结符" + curGra + "和输入符号" + curLex + "不匹配");
         System.out.println("采用错误恢复，弹出栈顶终结符: " + curGra);
         errorMessage.add("采用错误恢复，弹出栈顶终结符: " + curGra);
       } else if (Table.get(curGra).containsKey(curLex)) {
@@ -207,8 +238,8 @@ public class GrammarAnalyzer {
               + "跳转表[" + curGra + "," + curLex +
               "]为sync，采用错误恢复，弹出栈顶非终结符 " + curGra);
           errorMessage.add("Error at Line " + curTok.getLineIndex() + ": "
-                  + "跳转表[" + curGra + "," + curLex +
-                  "]为sync，采用错误恢复，弹出栈顶非终结符 " + curGra);
+              + "跳转表[" + curGra + "," + curLex +
+              "]为sync，采用错误恢复，弹出栈顶非终结符 " + curGra);
           continue;
         }
         List<String> right = Table.get(curGra).get(curLex).getRight();
@@ -235,7 +266,7 @@ public class GrammarAnalyzer {
         System.out.println("Error at Line " + curTok.getLineIndex() + ": "
             + "跳转表[" + curGra + "," + curLex + "]为空，检测到错误，忽略输入符号" + curLex);
         errorMessage.add("Error at Line " + curTok.getLineIndex() + ": "
-                + "跳转表[" + curGra + "," + curLex + "]为空，检测到错误，忽略输入符号" + curLex);
+            + "跳转表[" + curGra + "," + curLex + "]为空，检测到错误，忽略输入符号" + curLex);
         index++;
         analyzer.push(curGra);
         treeDepth.push(depth);
@@ -244,7 +275,7 @@ public class GrammarAnalyzer {
 
     // Print the tree
     System.out.println(outS.get(0) /*+ " (" + outH.get(0) + ")"*/);
-    stardOut.add(outS.get(0).toString());
+    standardOut.add(outS.get(0).toString());
     for (int i = 0; i < outS.size() - 1; i++) {
       StringBuilder sb = new StringBuilder();
       for (int j = 0; j < outH.get(i); j++) {
@@ -254,14 +285,14 @@ public class GrammarAnalyzer {
 //          System.out.print("┗----");
           System.out.println(outS.get(i) /*+ " (" + outH.get(i) + ")"*/);
           sb.append(outS.get(i).toString());
-          stardOut.add(sb.toString());
+          standardOut.add(sb.toString());
         } else {
           boolean isBrother = false;
           for (int k = i; k < outS.size(); k++) {
             if (outH.get(k) < j + 1) {
               break;
             } else if (outH.get(k) == j + 1) {
-              isBrother = true;
+              //isBrother = true; TODO:暂时注释掉，下面修改后重置
               break;
             }
           }
@@ -289,6 +320,8 @@ public class GrammarAnalyzer {
     analyzer.push(start);
     treeDepth.push(-1);
     treeDepth.push(0);
+    standardOut.clear();
+    errorMessage.clear();
   }
 
   /**
@@ -515,9 +548,9 @@ public class GrammarAnalyzer {
           System.out.println(line);
           System.out.println(pro[0]);
           // left part
-          String left = pro[0].strip();
+          String left = pro[0].trim();
           // right part
-          String[] rights = pro[1].strip().split(" ");
+          String[] rights = pro[1].trim().split(" ");
           List<String> right = new ArrayList<>();
           for (String s : rights) {
             if (s.equals("|")) {

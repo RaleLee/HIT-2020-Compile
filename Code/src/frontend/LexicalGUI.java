@@ -1,6 +1,6 @@
 package frontend;
 
-import java.awt.Font;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,40 +19,14 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import lexical.LexicalAnalyzer;
 
-public class GUI {
+public class LexicalGUI extends BaseGUI {
 
-  public static final int xBlankLen = 80;//水平间隔长度
-  public static final int yBlankLen = 20;//竖直间隔长度
-  public static final int textAreaWidth = xBlankLen * 6;
-  public static final int textAreaHeight = yBlankLen * 15;
-  public static final int labelWidth = xBlankLen * 2;
-  public static final Font labelFont = new Font("微软雅黑", Font.PLAIN, 25);
-  public static final Font buttonFont = new Font("微软雅黑", Font.BOLD, 25);
-  public static final Font textAreaFont = new Font("黑体", Font.PLAIN, 20);
-  public static final int buttonWidth = xBlankLen * 3;
-  public static final int buttonHeight = yBlankLen * 3;
-
-  public static void main(String[] args) {
-    // 创建 JFrame 实例
-    JFrame frame = new JFrame("编译器前端");
-    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-    frame.setBounds(0, 0, 1920, 1080);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-    // 添加 JPanel
-    JPanel panel = new JPanel();
-    frame.add(panel);
-    // 放置组件
-    placeComponents(panel);
-    // 设置界面可见
-    frame.setVisible(true);
+  public LexicalGUI() {
   }
 
-  private static JLabel generateLabel(String labelName, int labelX, int labelY) {
-    JLabel retLabel = new JLabel(labelName);
-    retLabel.setFont(labelFont);
-    retLabel.setBounds(labelX, labelY, labelWidth, textAreaHeight);
-    return retLabel;
+  public static void main(String[] args) {
+    LexicalGUI lexicalGUI = new LexicalGUI();
+    lexicalGUI.show("词法分析");
   }
 
 
@@ -96,9 +70,7 @@ public class GUI {
     return tempFrame;
   }
 
-  private static void placeComponents(JPanel panel) {
-
-    panel.setLayout(null);
+  protected void placeComponents(JPanel panel) {
 
     /*
       输入部分
