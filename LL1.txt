@@ -1,0 +1,31 @@
+==== start
+Program
+==== terminal
+@ record IDENTIFIER int float char string double if then else NUM CHAR STRING NUM SCI-NUM FLOAT SUB ( ) * { } [ ] EQL ADD ++ -- > < >= <= NE ASSIGN proc && || true , false do while call for ; return NOT
+==== non terminal
+Program C D P S E B A E F G H I Elist Elist' X M V relop L B' M' E' G' T L'
+==== production
+Program -> P
+P -> D P
+P -> S P
+P -> ε
+T -> X C
+D -> T IDENTIFIER A C ; | proc X IDENTIFIER ( M ) { P } | record IDENTIFIER { P }
+A -> ASSIGN F A | ε | , IDENTIFIER A | ASSIGN E A
+C -> [ NUM ] C
+C -> ε
+X -> int | float | char | string | double
+S -> if B then S else S | if B then S | return E ; | L ASSIGN E ; | do S while B | for ( id ASSIGN E ; B ; id V )  S | call IDENTIFIER ( Elist ) ; | while B S | { S }
+L -> IDENTIFIER L'
+L' -> [ NUM ] L' | ε
+B' -> || B B' | && B B' | ε
+B -> NOT B B' | true B' | false B' | [ B ] B' | E relop E B'
+relop -> < | NE | <= | > | >= | EQL
+V -> ++ | --
+Elist -> E Elist'
+Elist' -> , E Elist' | ε
+M -> X IDENTIFIER M' | ε
+M' -> , X IDENTIFIER M' | ε
+E -> SUB E E' | STRING E' | L E' | NUM E' | ( E ) E'
+E' -> ADD E E' | * E E' | SUB E E' | ε
+F -> E | IDENTIFIER | CHAR | STRING | NUM | SCI-NUM | FLOAT
