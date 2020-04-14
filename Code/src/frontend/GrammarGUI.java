@@ -197,8 +197,8 @@ public class GrammarGUI extends BaseGUI {
         .setBounds(xBlankLen + grammarButton.getX() + grammarButton.getWidth(),
             outputLabel.getY() + outputLabel.getHeight() + yBlankLen, buttonWidth, buttonHeight);
     grammarAnalyzeButton.addActionListener(actionEvent -> {
-//      firstAndFollow.setVisible(true);
-//      LL1Table.setVisible(true);
+      firstAndFollow.setVisible(true);
+      LL1Table.setVisible(true);
       ImageIcon parseTree = drawParseTree(
           grammarAnalyzer.Analyzer(lexicalAnalyzer.Analyzer(inputTextArea.getText())),
           grammarAnalyzer);
