@@ -497,6 +497,7 @@ public class LexicalAnalyzer {
 
 
   public List<Token> Analyzer(String input) {
+    input = input + "\n";
     List<Token> tokens = new ArrayList<>();
     ret = new ArrayList<>();
     error = new ArrayList<>();

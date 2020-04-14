@@ -287,7 +287,7 @@ public class GrammarAnalyzer {
           sb.append(outS.get(i).toString());
           standardOut.add(sb.toString());
         } else {
-          boolean isBrother = false;
+//          boolean isBrother = false;
           for (int k = i; k < outS.size(); k++) {
             if (outH.get(k) < j + 1) {
               break;

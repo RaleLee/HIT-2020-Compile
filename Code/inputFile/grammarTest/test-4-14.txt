@@ -1,0 +1,33 @@
+// Section1 声明语句
+// 变量声明
+int a = 23;
+// 数组声明
+double a[12];
+// 记录声明
+struct table{
+    int a;
+    double b;
+    char c[43]
+}
+// 过程声明
+proc int inc(int a){
+    int t = 3;
+}
+// Section2 表达式及赋值语句
+// 数组元素的引用和赋值
+int a[12];
+a[1] = 100;
+// 分支语句
+// if-then-else
+if(a > 0) then{
+    b = 1;
+    c = a;
+}
+// 循环语句
+// while
+int i = 0, a = 7; 
+while(a > 0){
+    i++;
+    a--;
+}
+// do-while
