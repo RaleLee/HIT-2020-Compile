@@ -52,6 +52,10 @@ public class GrammarAnalyzer {
     return la.Analyzer(programInput.toString());
   }
 
+  public Boolean checkTokenIsTerminal(PToken pToken) {
+    return endSymbols.contains(pToken.token);
+  }
+
   public static void main(String[] args) {
 
 //    List<Token> test = new ArrayList<>();

@@ -1,12 +1,17 @@
 package frontend;
 
 import grammar.GrammarAnalyzer;
+import grammar.PToken;
 import grammar.Production;
+import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
+import javafx.util.Pair;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -77,6 +82,52 @@ public class GrammarGUI extends BaseGUI {
     return generateFrameWithTable(tempTable, columns);
   }
 
+  private static ImageIcon drawParseTree(Pair<List<PToken>, List<Integer>> treePair,
+      GrammarAnalyzer analyzer) {
+    GraphViz graphViz = new GraphViz("result", "lib\\graphviz\\bin\\dot.exe");
+    graphViz.creatOrder();
+    File imageFile = new File(graphViz.getSavePath());
+    graphViz.start_graph();
+    List<PToken> pTokens = new ArrayList<>(treePair.getKey());
+    List<Integer> depths = new ArrayList<>(treePair.getValue());
+    List<String> nodeLabels = new ArrayList<>();
+    List<Boolean> checkSon = new ArrayList<>();
+    for (int ind = 0; ind < pTokens.size() - 1; ind++) {
+      PToken pToken = pTokens.get(ind);
+      String label =
+          pToken.token + (pToken.attribute != null ? ("\n(" + pToken.attribute) + ")" : "");
+      nodeLabels.add(label);
+      graphViz.addLn("node" + ind + "[label=\"" + label + "\"];");
+      checkSon.add(false);
+    }
+    Stack<Integer> fathers = new Stack<>();
+    fathers.push(0);
+    //忽略$ 即pTokens的最后一个
+    for (int ind = 1; ind < nodeLabels.size(); ind++) {
+      Integer curDepth = depths.get(ind);
+      String curNode = nodeLabels.get(ind);
+      while (depths.get(fathers.peek()) >= curDepth) {
+        fathers.pop();
+      }
+      checkSon.set(fathers.peek(), true);
+      graphViz.addLn("node" + fathers.peek() + "->" + "node" + ind + ";");
+      fathers.add(ind);
+    }
+    int epsilonCount = 0;
+    for (int ind = 0; ind < nodeLabels.size(); ind++) {
+      if (!checkSon.get(ind) && !analyzer.checkTokenIsTerminal(pTokens.get(ind))) {
+        graphViz.addLn("epsilon" + epsilonCount + "[label=\"" + GrammarAnalyzer.epsilon + "\"];");
+        graphViz.addLn("node" + ind + "->" + "epsilon" + (epsilonCount++) + ";");
+      }
+    }
+    graphViz.end_graph();
+    graphViz.run();
+    ImageIcon retImageIcon = new ImageIcon(graphViz.getSavePath());
+    retImageIcon.setImage(retImageIcon.getImage()
+        .getScaledInstance(retImageIcon.getIconWidth(), retImageIcon.getIconHeight(),
+            Image.SCALE_DEFAULT));
+    return retImageIcon;
+  }
 
   protected void placeComponents(JPanel panel) {
     /*
@@ -98,6 +149,7 @@ public class GrammarGUI extends BaseGUI {
      */
     JLabel outputLabel = generateLabel("输出", xBlankLen, inputLabel.getY() + inputLabel.getHeight());
     panel.add(outputLabel);
+
     JTextArea outputTextArea = new JTextArea();
     outputTextArea.setFont(textAreaFont);
     JScrollPane outputScrollPane = new JScrollPane(outputTextArea);
@@ -115,6 +167,16 @@ public class GrammarGUI extends BaseGUI {
     JFrame firstAndFollow = generateFirstAndFollow(grammarAnalyzer);
     JFrame LL1Table = generateLL1Table(grammarAnalyzer);
     /*
+     初始化显示树的label
+     */
+    JLabel treeLabel = new JLabel();
+    treeLabel.setBounds(inputScrollPane.getX() + inputScrollPane.getWidth() + xBlankLen,
+        inputScrollPane.getY(), textAreaWidth,
+        textAreaHeight);
+    treeLabel.setFont(labelFont);
+    treeLabel.setVisible(false);
+    panel.add(treeLabel);
+    /*
     创建按钮，绑定事件
      */
     JButton grammarButton = new JButton("读取输入文件");
@@ -129,17 +191,23 @@ public class GrammarGUI extends BaseGUI {
       inputTextArea.setText(fileContent2String(jFileChooser.getSelectedFile()).trim());
     });
     panel.add(grammarButton);
-    JButton nfaLexicalButton = new JButton("语法分析");
-    nfaLexicalButton.setFont(buttonFont);
-    nfaLexicalButton
+    JButton grammarAnalyzeButton = new JButton("语法分析");
+    grammarAnalyzeButton.setFont(buttonFont);
+    grammarAnalyzeButton
         .setBounds(xBlankLen + grammarButton.getX() + grammarButton.getWidth(),
             outputLabel.getY() + outputLabel.getHeight() + yBlankLen, buttonWidth, buttonHeight);
-    nfaLexicalButton.addActionListener(actionEvent -> {
-      firstAndFollow.setVisible(true);
-      LL1Table.setVisible(true);
-      grammarAnalyzer.Analyzer(lexicalAnalyzer.Analyzer(inputTextArea.getText()));
+    grammarAnalyzeButton.addActionListener(actionEvent -> {
+//      firstAndFollow.setVisible(true);
+//      LL1Table.setVisible(true);
+      ImageIcon parseTree = drawParseTree(
+          grammarAnalyzer.Analyzer(lexicalAnalyzer.Analyzer(inputTextArea.getText())),
+          grammarAnalyzer);
+      treeLabel.setIcon(parseTree);
+      treeLabel.setBounds(treeLabel.getX(), treeLabel.getY(), parseTree.getIconWidth(),
+          parseTree.getIconHeight());
+      treeLabel.setVisible(true);
       outputTextArea.setText(String.join("\n", grammarAnalyzer.getStandardOut()));
     });
-    panel.add(nfaLexicalButton);
+    panel.add(grammarAnalyzeButton);
   }
 }
