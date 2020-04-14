@@ -14,6 +14,8 @@ import java.util.Stack;
 import javafx.util.Pair;
 import lexical.LexicalAnalyzer;
 
+import javax.swing.plaf.ToolBarUI;
+
 public class GrammarAnalyzer {
 
   public static final String grammarPath = "config\\Grammar\\LL1.txt";
@@ -130,6 +132,15 @@ public class GrammarAnalyzer {
     creSelectSet();
     // Construct Table
     creTable();
+    // show select
+    for(Production p : select.keySet()){
+      Set<String> ss = select.get(p);
+      System.out.print(p.toString()+ "       ");
+      for(String s : ss){
+        System.out.print(s + " ");
+      }
+      System.out.println();
+    }
   }
 
   public Map<String, Set<String>> getFollowSet() {
@@ -501,6 +512,9 @@ public class GrammarAnalyzer {
       Set<String> sel = select.get(pro);
       for (String s : sel) {
         Table.get(left).putIfAbsent(s, pro);
+        if(Table.get(left).get(s).getRight().get(0).equals(epsilon)){
+          Table.get(left).put(s, pro);
+        }
       }
     }
     // Add sync
