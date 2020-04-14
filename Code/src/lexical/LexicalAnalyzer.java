@@ -17,10 +17,10 @@ import java.util.regex.Pattern;
 
 public class LexicalAnalyzer {
 
-  public static final String nfaFilePath = "config/NFA.txt";
+  public static final String nfaFilePath = "config\\FA\\NFA.txt";
   //public static final String inputFilePath = "inputFile/correctTest.txt";
   //public static final String wrongInputFilePath = "inputFile/wrongTest.txt";
-  public static final String dfaFilePath = "config/DFA.txt";
+  public static final String dfaFilePath = "config\\FA\\DFA.txt";
   // Jump Table
   final Map<Integer, Map<Pattern, Integer>> Table = new HashMap<>();
   // Map of state name, Integer for state number, String for the recognized end state name.

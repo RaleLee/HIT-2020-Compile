@@ -64,7 +64,7 @@ public class GrammarGUI extends BaseGUI {
     nonTerSymbols.sort(String::compareTo);
     Object[][] tempTable = new Object[nonTerSymbols.size()][endSymbols.size() + 1];
     List<String> columns = new ArrayList<>();
-    columns.add("NonTerminalSymbol");
+    columns.add("Symbol");
     columns.addAll(endSymbols);
     Map<String, Map<String, Production>> LL1table = analyzer.getTable();
     for (int row = 0; row < nonTerSymbols.size(); row++) {

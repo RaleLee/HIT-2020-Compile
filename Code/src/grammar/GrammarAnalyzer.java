@@ -16,7 +16,7 @@ import lexical.LexicalAnalyzer;
 
 public class GrammarAnalyzer {
 
-  public static final String grammarPath = "config\\LL1.txt";
+  public static final String grammarPath = "config\\Grammar\\LL1.txt";
   public static final String correctTestPath = "inputFile\\grammarTest\\grammarCorrectTest.txt";
   public static final String epsilon = "ε";
   public static final String end = "$";

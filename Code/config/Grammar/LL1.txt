@@ -1,7 +1,7 @@
 ==== start
 Program
 ==== terminal
-record IDENTIFIER int float char string double if then else NUM CHAR STRING NUM SCI-NUM FLOAT + SUB ( ) * { } [ ] EQL ADD ++ -- > < >= <= NE ASSIGN proc && || true , false do while call for ; return NOT
+record IDENTIFIER int float char string double if then else NUM CHAR STRING NUM SCI-NUM FLOAT SUB ( ) * { } [ ] EQL ADD ++ -- > < >= <= NE ASSIGN proc && || true , false do while call for ; return NOT
 ==== non terminal
 Program C D P S E B A E F G H I Elist Elist' X M V relop L B' M' E' G' T L'
 ==== production
@@ -29,4 +29,3 @@ M' -> , X IDENTIFIER M' | ε
 E -> SUB E E' | ( E ) E' | STRING E' | L E' | NUM E'
 E' -> ADD E E' | * E E' | SUB E E' | ε
 F -> ( E ) | IDENTIFIER | CHAR | STRING | NUM | SCI-NUM | FLOAT
-
