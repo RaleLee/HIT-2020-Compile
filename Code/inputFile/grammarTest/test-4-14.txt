@@ -7,7 +7,7 @@ double a[12];
 struct table{
     int a;
     double b;
-    char c[43]
+    char c[43];
 }
 // 过程声明
 proc int inc(int a){

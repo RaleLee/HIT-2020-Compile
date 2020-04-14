@@ -500,7 +500,7 @@ public class GrammarAnalyzer {
       String left = pro.getLeft();
       Set<String> sel = select.get(pro);
       for (String s : sel) {
-        Table.get(left).put(s, pro);
+        Table.get(left).putIfAbsent(s, pro);
       }
     }
     // Add sync
