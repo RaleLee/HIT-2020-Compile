@@ -1,0 +1,12 @@
+while i != 22 {
+    i++;
+if()then m = m +1;  
+int a=b,c;
+if(m<8)  	
+then m = m +1;  
+then m = m*2;
+proc inc (int a) { int t=3 ;}
+float a == b;
+if[i===b]
+then m = m +1;  
+else m = m*2;

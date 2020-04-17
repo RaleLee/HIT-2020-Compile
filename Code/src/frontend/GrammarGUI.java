@@ -199,14 +199,18 @@ public class GrammarGUI extends BaseGUI {
     grammarAnalyzeButton.addActionListener(actionEvent -> {
       firstAndFollow.setVisible(true);
       LL1Table.setVisible(true);
-      ImageIcon parseTree = drawParseTree(
-          grammarAnalyzer.Analyzer(lexicalAnalyzer.Analyzer(inputTextArea.getText())),
+      Pair<List<PToken>, List<Integer>> tempPair = grammarAnalyzer
+          .Analyzer(lexicalAnalyzer.Analyzer(inputTextArea.getText()));
+      ImageIcon parseTree = drawParseTree(tempPair,
           grammarAnalyzer);
+      treeLabel.setBounds(treeLabel.getX(), treeLabel.getY(), textAreaWidth * 2 + xBlankLen,
+          textAreaHeight * 3);
+      parseTree.setImage(parseTree.getImage()
+          .getScaledInstance(treeLabel.getWidth(), treeLabel.getHeight(), Image.SCALE_DEFAULT));
       treeLabel.setIcon(parseTree);
-      treeLabel.setBounds(treeLabel.getX(), treeLabel.getY(), parseTree.getIconWidth(),
-          parseTree.getIconHeight());
       treeLabel.setVisible(true);
-      outputTextArea.setText(String.join("\n", grammarAnalyzer.getStandardOut()));
+      outputTextArea.setText(String.join("\n", grammarAnalyzer.getStandardOut()) + '\n'
+          + String.join("\n", grammarAnalyzer.getErrorMessage()));
     });
     panel.add(grammarAnalyzeButton);
   }
