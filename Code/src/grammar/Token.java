@@ -6,7 +6,7 @@ public class Token {
     private final String spName;
     // attribute value
     private final String attValue;
-
+    // line index
     private final int lineIndex;
 
     public Token(String spName, String attValue, int lineIndex) {

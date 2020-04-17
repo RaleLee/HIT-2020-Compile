@@ -8,7 +8,7 @@ public class Production {
     private String left = null;
     // Right part of the production
     private List<String> right = null;
-
+    // Error Handle Sync Symbol
     private String sync = null;
 
     /**
