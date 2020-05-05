@@ -1,31 +1,41 @@
 package grammar;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PToken {
 
-    // Need print symbol
-    public String token;
-    // line number
-    public int lineIndex;
-    // attribute value
-    public String attribute = null;
+  // Need print symbol
+  public String token;
+  // line number
+  public int lineIndex;
+  // attribute value
+  public String lexeme = null;
+  public String type = null;
+  public int width = 0;
+  public List<Integer> trueList = new ArrayList<>();
+  public List<Integer> falseList = new ArrayList<>();
+  public List<Integer> nextList = new ArrayList<>();
+  public int quad = 0;
+  public String addr = null;
 
-    public PToken(String token, int lineIndex){
-        this.token = token;
-        this.lineIndex = lineIndex;
-    }
+  public PToken(String token, int lineIndex) {
+    this.token = token;
+    this.lineIndex = lineIndex;
+  }
 
-    public PToken(String token, int lineIndex, String attribute){
-        this.token = token;
-        this.lineIndex = lineIndex;
-        this.attribute = attribute;
-    }
+  public PToken(String token, int lineIndex, String attribute) {
+    this.token = token;
+    this.lineIndex = lineIndex;
+    this.lexeme = attribute;
+  }
 
-    @Override
-    public String toString(){
-        if(attribute != null){
-            return token+"("+lineIndex+")"+" :"+attribute;
-        }
-        return token+"("+lineIndex+")";
+  @Override
+  public String toString() {
+    if (lexeme != null) {
+      return token + "(" + lineIndex + ")" + " :" + lexeme;
     }
+    return token + "(" + lineIndex + ")";
+  }
 
 }

@@ -95,7 +95,7 @@ public class GrammarGUI extends BaseGUI {
     for (int ind = 0; ind < pTokens.size() - 1; ind++) {
       PToken pToken = pTokens.get(ind);
       String label =
-          pToken.token + (pToken.attribute != null ? ("\n(" + pToken.attribute) + ")" : "");
+          pToken.token + (pToken.lexeme != null ? ("\n(" + pToken.lexeme) + ")" : "");
       nodeLabels.add(label);
       graphViz.addLn("node" + ind + "[label=\"" + label + "\"];");
       checkSon.add(false);

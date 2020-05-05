@@ -14,14 +14,41 @@ import java.util.Stack;
 import javafx.util.Pair;
 import lexical.LexicalAnalyzer;
 
-import javax.swing.plaf.ToolBarUI;
-
 public class GrammarAnalyzer {
 
   public static final String grammarPath = "config\\Grammar\\LL1.txt";
   public static final String correctTestPath = "inputFile\\grammarTest\\grammarCorrectTest.txt";
   public static final String epsilon = "ε";
   public static final String end = "$";
+
+  /**
+   * The constructor of Grammar Analyzer
+   *
+   * @param file the configure file of grammar analyzer.
+   */
+  public GrammarAnalyzer(File file) {
+    readFile(file);
+    // Construct epsilon set
+    creEpsilonSet();
+    // Construct first set
+    creFirstSet();
+    // Construct follow set
+    creFollowSet();
+    // Construct select set
+    creSelectSet();
+    // Construct Table
+    creTable();
+    // show select
+    for (Production p : select.keySet()) {
+      Set<String> ss = select.get(p);
+      System.out.print(p.toString() + "       ");
+      for (String s : ss) {
+        System.out.print(s + " ");
+      }
+      System.out.println();
+    }
+  }
+
   // Use LL1
   private final List<Production> productions = new ArrayList<>();
   // Predict table
@@ -114,33 +141,8 @@ public class GrammarAnalyzer {
     return firstSet;
   }
 
-
-  /**
-   * The constructor of Grammar Analyzer
-   *
-   * @param file the configure file of grammar analyzer.
-   */
-  public GrammarAnalyzer(File file) {
-    readFile(file);
-    // Construct epsilon set
-    creEpsilonSet();
-    // Construct first set
-    creFirstSet();
-    // Construct follow set
-    creFollowSet();
-    // Construct select set
-    creSelectSet();
-    // Construct Table
-    creTable();
-    // show select
-    for(Production p : select.keySet()){
-      Set<String> ss = select.get(p);
-      System.out.print(p.toString()+ "       ");
-      for(String s : ss){
-        System.out.print(s + " ");
-      }
-      System.out.println();
-    }
+  public List<Production> getProductions() {
+    return new ArrayList<>(productions);
   }
 
   public Map<String, Set<String>> getFollowSet() {
@@ -512,7 +514,7 @@ public class GrammarAnalyzer {
       Set<String> sel = select.get(pro);
       for (String s : sel) {
         Table.get(left).putIfAbsent(s, pro);
-        if(Table.get(left).get(s).getRight().get(0).equals(epsilon)){
+        if (Table.get(left).get(s).getRight().get(0).equals(epsilon)) {
           Table.get(left).put(s, pro);
         }
       }
