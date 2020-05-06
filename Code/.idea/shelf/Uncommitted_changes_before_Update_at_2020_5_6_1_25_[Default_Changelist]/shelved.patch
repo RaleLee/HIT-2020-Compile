@@ -1,0 +1,14 @@
+Index: inputFile/semanticTest/semanticCorrectTest.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>a+1;
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- inputFile/semanticTest/semanticCorrectTest.txt	(revision b3816536af3f4a8096ee06d7cde17694044498d0)
++++ inputFile/semanticTest/semanticCorrectTest.txt	(date 1588699387924)
+@@ -1,1 +1,1 @@
+-a+1;
+\ No newline at end of file
++int aInt;
+\ No newline at end of file

@@ -1,0 +1,49 @@
+offset int 相对地址
+nextquad 全局
+q int队列 全局
+.type string IDENTIFIER类型
+.width int 类型宽度
+.truelist/falselist/nextlist list<int> 指令标号列表
+.quad int 指令标号
+.lexeme string 变量名字
+.addr string ???
+
+p全局临时变量
+
+a1:t=X.type;w=X.width;T.type=C.type;T.width=C.width;
+a2:enter(IDENTIFIER.lexeme,T.type,offset);offset=offset+T.width;
+a3:type='proc';enter(id.lexeme,type,offset);
+a4:type='record';enter(id.lexeme,type,offset);
+a5:enter(IDENTIFIER.lexeme,T.type,offset);offset=offset+T.width;
+a6:C.type=array( NUM.val,C1.type); C.width=NUM.val*C1.width;
+a7:C.type=t; C.width=w;
+a8:X.type=int ;X.width=4;
+a9:X.type=float ;X.width=4;
+a10:X.type=char ;X.width=1;
+a11:X.type=double ;X.width=8;
+a12:backpatch(B.truelist, U1.quad); backpatch(B.falselist, U2.quad); S.nextlist=merge(merge(S1.nextlist,W.nextlist),S2.nextlist);
+a13:gen( L.array ‘[’ L.offset ‘]’ ‘=’ E.addr );
+a14:p=lookup(id.lexeme); if p==nil then error ;gen(p '=' E.addr );
+a15:n=0;for q中的每个t do {gen('param' t);n=n+1;}gen('call' IDENTIFIER.addr ',' n)
+a16:S.nextlist = B.falselist;backpatch( S1.nextlist, U1.quad );backpatch( B.truelist, U2.quad );gen('goto' M1.quad);
+a17:N.nextlist = makelist(nextquad); gen('goto_');
+a18:L.array = lookup(IDENTIFIER.lexeme); if L.array==nil then error ; L.type = L.array.type.elem ;L.offset = newtemp();gen( L.offset ‘=’ E.addr ‘*’ L.type.width );
+a19:B.truelist= merge(O1.truelist,O2.truelist );B.falselist = O2.falselist ;backpatch(O1.falselist, U.quad );
+a20:U.quad = nextquad ;
+a21:O.truelist= Q2.truelist;O.falselist = merge(Q1.falselist,Q2.falselist) ;backpatch(Q1.truelist, U.quad );
+a22:Q.truelist = B.falselist;I.falselist = B.truelist;
+a23:Q.truelist = B.truelist ; I.falselist = B.falselist ;
+a24:Q.truelist = makelist(nextquad);Q.falselist = makelist(nextquad+1);gen('if ' E1.addr relop E2.addr 'goto _');gen('goto _');
+a25:Q.truelist = makelist(nextquad);gen('goto _');
+a26:Q.falselist = makelist(nextquad);gen('goto _');
+a27:将E.addr添加到q的队尾
+a28:E.addr=newtemp();gen(E.addr '=' E'.addr 'J' Y.addr);
+a29:E.addr = newtemp(); gen( E.addr ‘=’ L. array ‘[’ L.offset ‘]’ ); 
+a30:E'.addr=Y.addr
+a31:G.addr=newtemp();gen(G.addr '=' F.addr 'K' G'.addr);
+a32:G'.addr=F.addr
+a33:Z.addr=E.addr
+a34:Z.addr=lookup(IDENTIFIER.lexeme);if Z.addr==nil then error;
+a35:Z.addr=NUM.lex
+a36:Z.addr=FLOAT.lex
+a37:gen('return' E.addr)
