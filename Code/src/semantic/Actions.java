@@ -45,6 +45,51 @@ public class Actions {
     semanticAnalyzer.setOffset(semanticAnalyzer.offset + T.width);
   }
 
+  private static void action3(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer){
+    PToken D = nowNodes.get(0);
+    PToken proc = nowNodes.get(1);
+    PToken X = nowNodes.get(2);
+    PToken Identifier = nowNodes.get(3);
+    try {
+      semanticAnalyzer.enter(Identifier.lexeme, Identifier.type);
+    } catch (Exception e){
+      // TODO: fill the exception condition ???
+      System.out.println("Error at Line " + D.lineIndex + ": ???");
+      System.exit(-1);
+    }
+  }
+
+  private static void action4(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken D = nowNodes.get(0);
+    PToken record = nowNodes.get(1);
+    PToken Identifier = nowNodes.get(2);
+    try {
+      semanticAnalyzer.enter(Identifier.lexeme, Identifier.type);
+    } catch (Exception e){
+      // TODO: fill the exception condition ???
+      System.out.println("Error at Line " + D.lineIndex + ": ???");
+      System.exit(-1);
+    }
+  }
+
+  // TODO: action5 has a little problem
+  // TODO: Remove this Action
+  private static void action5(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken A = nowNodes.get(0);
+    PToken sp = nowNodes.get(1);
+    PToken Identifier = nowNodes.get(2);
+    PToken A2 = nowNodes.get(3);
+
+  }
+
+  private static void action6(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken C = nowNodes.get(0);
+    PToken Num = nowNodes.get(2);
+    PToken C1 = nowNodes.get(3);
+    C.setType(Num.lexeme + C1.type);
+    C.setWidth(Integer.parseInt(Num.lexeme) * C1.width);
+  }
+
   private static void action7(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken C = nowNodes.get(0);
     C.setType(semanticAnalyzer.tType);
@@ -57,6 +102,31 @@ public class Actions {
     X.setWidth(4);
   }
 
+  private static void action9(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken X = nowNodes.get(0);
+    X.setType("float");
+    X.setWidth(4);
+  }
+
+  private static void action10(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken X = nowNodes.get(0);
+    X.setType("char");
+    X.setWidth(1);
+  }
+
+  private static void action11(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken X = nowNodes.get(0);
+    X.setType("double");
+    X.setWidth(8);
+  }
+
+  // TODO: Action12~19
+
+  private static void action20(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken U = nowNodes.get(0);
+    // TODO: 好像这个也是一个跨行的 没有看到nextquad在哪里
+  }
+
   private static void action22(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Q = nowNodes.get(0);
     PToken NOT = nowNodes.get(1);
@@ -65,12 +135,18 @@ public class Actions {
     Q.setFalseList(B.trueList);
   }
 
+  private static void action23(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Q = nowNodes.get(0);
+    PToken B = nowNodes.get(2);
+    Q.setTrueList(B.trueList);
+    Q.setFalseList(B.falseList);
+  }
+
   private static void action28(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken E = nowNodes.get(0);
     PToken Y = nowNodes.get(1);
     PToken Ep = nowNodes.get(2);
     newTempAndGen(E, Y, Ep, semanticAnalyzer, "+");
-
   }
 
   private static void action30(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
@@ -94,10 +170,22 @@ public class Actions {
     newTempAndGen(Yp, Z, YpR, semanticAnalyzer, "*");
   }
 
+  private static void action33(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Z = nowNodes.get(0);
+    PToken E = nowNodes.get(2);
+    Z.setAddr(E.addr);
+  }
+
   private static void action35(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Z = nowNodes.get(0);
     PToken NUM = nowNodes.get(1);
     Z.setAddr(NUM.lexeme);
+  }
+
+  private static void action36(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Z = nowNodes.get(0);
+    PToken Float = nowNodes.get(1);
+    Z.setAddr(Float.lexeme);
   }
 
   private static void action38(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
