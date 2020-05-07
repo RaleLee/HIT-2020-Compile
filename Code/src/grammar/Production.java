@@ -96,6 +96,19 @@ public class Production {
     return sb.toString();
   }
 
+  public String toTrueString() {
+    if (sync != null) {
+      return sync;
+    }
+    StringBuilder sb = new StringBuilder();
+    sb.append(this.left);
+    sb.append(" -> ");
+    for (String s : trueRight) {
+      sb.append(s).append(" ");
+    }
+    return sb.toString();
+  }
+
   /**
    * The getter of left
    *

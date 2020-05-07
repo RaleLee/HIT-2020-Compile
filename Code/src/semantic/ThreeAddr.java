@@ -16,7 +16,7 @@ public class ThreeAddr {
 
   @Override
   public String toString() {
-    return '(' +
+    return content + '\n' + '(' +
         type + ',' + elements[0] + ',' + elements[1] + ',' + elements[2]
         + ')';
   }

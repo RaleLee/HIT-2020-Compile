@@ -10,7 +10,7 @@ q int队列 全局
 
 p全局临时变量
 
-a1:t=X.type;w=X.width;T.type=C.type;T.width=C.width;
+a1:T.type=C.type;T.width=C.width;
 a2:enter(IDENTIFIER.lexeme,T.type,offset);offset=offset+T.width;
 a3:type='proc';enter(id.lexeme,type,offset);
 a4:type='record';enter(id.lexeme,type,offset);
@@ -31,19 +31,24 @@ a18:L.array = lookup(IDENTIFIER.lexeme); if L.array==nil then error ; L.type = L
 a19:B.truelist= merge(O1.truelist,O2.truelist );B.falselist = O2.falselist ;backpatch(O1.falselist, U.quad );
 a20:U.quad = nextquad ;
 a21:O.truelist= Q2.truelist;O.falselist = merge(Q1.falselist,Q2.falselist) ;backpatch(Q1.truelist, U.quad );
-a22:Q.truelist = B.falselist;I.falselist = B.truelist;
-a23:Q.truelist = B.truelist ; I.falselist = B.falselist ;
+a22:Q.truelist = B.falselist; Q.falselist = B.truelist;
+a23:Q.truelist = B.truelist ; Q.falselist = B.falselist ;
 a24:Q.truelist = makelist(nextquad);Q.falselist = makelist(nextquad+1);gen('if ' E1.addr relop E2.addr 'goto _');gen('goto _');
 a25:Q.truelist = makelist(nextquad);gen('goto _');
 a26:Q.falselist = makelist(nextquad);gen('goto _');
 a27:将E.addr添加到q的队尾
-a28:E.addr=newtemp();gen(E.addr '=' E'.addr 'J' Y.addr);
+a28:E.addr=newtemp();gen(E.addr '=' Y.addr '+' E'.addr);
 a29:E.addr = newtemp(); gen( E.addr ‘=’ L. array ‘[’ L.offset ‘]’ ); 
-a30:E'.addr=Y.addr
-a31:G.addr=newtemp();gen(G.addr '=' F.addr 'K' G'.addr);
-a32:G'.addr=F.addr
+a30:E'.addr=newtemp()gen(E'.addr '=' Y.addr '+' E'(right).addr)
+a31:Y.addr=newtemp();gen(Y.addr '=' Z.addr '*' Y'.addr);
+a32:Y'.addr=newtemp();gen(Y'.addr '=' Z.addr '*' Y'(right).addr)
 a33:Z.addr=E.addr
 a34:Z.addr=lookup(IDENTIFIER.lexeme);if Z.addr==nil then error;
 a35:Z.addr=NUM.lex
 a36:Z.addr=FLOAT.lex
 a37:gen('return' E.addr)
+a38:E.addr=newtemp();gen(E.addr '=' E'.addr '-' Y.addr);
+a39:Y'.addr=newtemp();gen(Y'.addr '=' Z.addr '/' Y'(right).addr)
+a40:t=X.type;w=X.width;
+a41:E'.addr=0;
+a42:Y'.addr=1;

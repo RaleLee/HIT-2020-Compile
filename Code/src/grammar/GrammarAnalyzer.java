@@ -564,6 +564,9 @@ public class GrammarAnalyzer {
       if (line.contains("====")) {
         while (sc.hasNextLine()) {
           line = sc.nextLine();
+          if (line.length() == 0) {
+            continue;
+          }
           String[] pro = line.split("->");
           System.out.println(line);
           System.out.println(pro[0]);

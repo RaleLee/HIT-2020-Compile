@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import lexical.LexicalAnalyzer;
+import semantic.SemanticAnalyzer;
 
 public class GrammarGUI extends BaseGUI {
 
@@ -163,7 +164,7 @@ public class GrammarGUI extends BaseGUI {
      */
     LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(new File(LexicalAnalyzer.dfaFilePath),
         false);
-    GrammarAnalyzer grammarAnalyzer = new GrammarAnalyzer(new File(GrammarAnalyzer.grammarPath));
+    GrammarAnalyzer grammarAnalyzer = new GrammarAnalyzer(new File(SemanticAnalyzer.grammarPath));
     JFrame firstAndFollow = generateFirstAndFollow(grammarAnalyzer);
     JFrame LL1Table = generateLL1Table(grammarAnalyzer);
     /*
