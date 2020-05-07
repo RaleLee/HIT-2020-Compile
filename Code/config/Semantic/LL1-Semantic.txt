@@ -3,23 +3,20 @@ Program
 ==== terminal
 record IDENTIFIER int float char string double if then else NUM CHAR STRING NUM SCI-NUM FLOAT SUB ( ) * { } [ ] EQL ADD ++ -- > < >= <= NE ASSIGN proc && || true , false do while call for ; return NOT /
 ==== non terminal
-Program C D P S E B A E F G H I Elist Elist' X M V relop L B' M' E' G' T L' X Y Z O Q Q' O' X' Y' Z' K J W U
+Program C D P S E B A E F G H I Elist Elist' X M V relop L B' M' E' G' T L' X Y Z O Q Q' O' X' Y' Z' K J W U S'
 ==== production
 Program -> P
 P -> D P
 P -> S P
 P -> ε
 T -> X #a40# C #a1#
-D -> T IDENTIFIER A #a2# C ; | proc X IDENTIFIER #a3# ( M ) { P } | record IDENTIFIER #a4# { P }
-int a[1] 1*
-L-> a L'
-L -> IDENTIFIER L'
-L' -> [ NUM ] L' | ε
-A -> , IDENTIFIER A #a5# | ASSIGN E A | ε
+D -> T IDENTIFIER #a2# C ; | proc X IDENTIFIER #a3# ( M ) { P } | record IDENTIFIER #a4# { P }
 C -> [ NUM ] C #a6# | ε #a7#
 X -> int #a8# | float #a9# | char #a10# | double #a11#
-S -> if B then U S W else U S #a12# | return E #a37# ; | IDENTIFIER ASSIGN E ; #a14# | call IDENTIFIER ( Elist ) ;  #a15# | while U B U S #a16# | { S }
-W-> ε #a17#
+S -> if B then U S W else U S #a12# | return E #a37# ; | IDENTIFIER ASSIGN E ; #a14# | call IDENTIFIER ( Elist ) ;  #a15# | while U B U S #a16# | { S } | L ASSIGN E ; #a47#
+L -> IDENTIFIER #a45# L' #a43#
+L' -> [ E ] L' #a44# | ε #a46#
+W -> ε #a17#
 B -> O B'
 B' -> || U O B' #a19# | ε
 U -> ε #a20#

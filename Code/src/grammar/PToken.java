@@ -12,6 +12,12 @@ public class PToken {
   // attribute value
   public String lexeme = null;
   public String type = null;
+  public String array = null;
+
+  public void setArray(String array) {
+    this.array = array;
+  }
+
   public int width = 0;
   public List<Integer> trueList = new ArrayList<>();
   public List<Integer> falseList = new ArrayList<>();

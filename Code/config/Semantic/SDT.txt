@@ -14,7 +14,6 @@ a1:T.type=C.type;T.width=C.width;
 a2:enter(IDENTIFIER.lexeme,T.type,offset);offset=offset+T.width;
 a3:type='proc';enter(id.lexeme,type,offset);
 a4:type='record';enter(id.lexeme,type,offset);
-a5:enter(IDENTIFIER.lexeme,T.type,offset);offset=offset+T.width;
 a6:C.type=array( NUM.val,C1.type); C.width=NUM.val*C1.width;
 a7:C.type=t; C.width=w;
 a8:X.type=int ;X.width=4;
@@ -23,7 +22,7 @@ a10:X.type=char ;X.width=1;
 a11:X.type=double ;X.width=8;
 a12:backpatch(B.truelist, U1.quad); backpatch(B.falselist, U2.quad); S.nextlist=merge(merge(S1.nextlist,W.nextlist),S2.nextlist);
 a13:gen( L.array ‘[’ L.offset ‘]’ ‘=’ E.addr );
-a14:p=lookup(id.lexeme); if p==nil then error ;gen(p '=' E.addr );
+a14:p=lookup(id.lexeme); if p==nil then error ;gen(id.lexeme '=' E.addr );
 a15:n=0;for q中的每个t do {gen('param' t);n=n+1;}gen('call' IDENTIFIER.addr ',' n)
 a16:S.nextlist = B.falselist;backpatch( S1.nextlist, U1.quad );backpatch( B.truelist, U2.quad );gen('goto' M1.quad);
 a17:N.nextlist = makelist(nextquad); gen('goto_');
@@ -37,18 +36,22 @@ a24:Q.truelist = makelist(nextquad);Q.falselist = makelist(nextquad+1);gen('if '
 a25:Q.truelist = makelist(nextquad);gen('goto _');
 a26:Q.falselist = makelist(nextquad);gen('goto _');
 a27:将E.addr添加到q的队尾
-a28:E.addr=newtemp();gen(E.addr '=' Y.addr '+' E'.addr);
-a29:E.addr = newtemp(); gen( E.addr ‘=’ L. array ‘[’ L.offset ‘]’ ); 
-a30:E'.addr=newtemp()gen(E'.addr '=' Y.addr '+' E'(right).addr)
-a31:Y.addr=newtemp();gen(Y.addr '=' Z.addr '*' Y'.addr);
-a32:Y'.addr=newtemp();gen(Y'.addr '=' Z.addr '*' Y'(right).addr)
-a33:Z.addr=E.addr
-a34:Z.addr=lookup(IDENTIFIER.lexeme);if Z.addr==nil then error;
-a35:Z.addr=NUM.lex
-a36:Z.addr=FLOAT.lex
+a28:E.addr=newtemp();检查Y和E’的type;E.type = Y.type;gen(E.addr '=' Y.addr '+' E'.addr);
+a30:E'.addr=newtemp()检查Y和E’的type;gen(E'.addr '=' Y.addr '+' E'(right).addr)
+a31:Y.addr=newtemp();检查Y和E’的type;gen(Y.addr '=' Z.addr '*' Y'.addr);
+a32:Y'.addr=newtemp();检查Y和E’的type;gen(Y'.addr '=' Z.addr '*' Y'(right).addr)
+a33:Z.addr=E.addr Z.type=E.type
+a34:Z.addr=lookup(IDENTIFIER.lexeme)(这里的意思是lookup查找是否存在，然后再把词法值直接给addr);if Z.addr==nil then error;Z.type = IDENTIFIER.type(lookup里拿到的)
+a35:Z.addr=NUM.lex Z.type="int"
+a36:Z.addr=FLOAT.lex Z.type="float"
 a37:gen('return' E.addr)
-a38:E.addr=newtemp();gen(E.addr '=' E'.addr '-' Y.addr);
-a39:Y'.addr=newtemp();gen(Y'.addr '=' Z.addr '/' Y'(right).addr)
+a38:E.addr=newtemp();检查E'和Y的type;gen(E.addr '=' E'.addr '-' Y.addr);
+a39:Y'.addr=newtemp();检查Z和Y’的type;gen(Y'.addr '=' Z.addr '/' Y'(right).addr)
 a40:t=X.type;w=X.width;
-a41:E'.addr=0;
-a42:Y'.addr=1;
+a41:E'.addr=0; 赋值TYPE
+a42:Y'.addr=1; 赋值TYPE
+a43:
+a44:p=newtemp();gen(t '=' E.addr '*' a.width); gen(offset '=' offset '+' t );a=a.array; 在这里检查E是否为合法整数下标
+a45:P = lookup(IDENTIFIER.lexme) L.type=p.type L.width=p.with check repeat define 记录一个全局变量arraywidth，存储数组各维宽度 arrayElewidth 记录数组类型的宽度
+a46:L'.addr=newtemp();L'.width = arrayEleWidth;gen(L'.addr = L'.width);L'.type = int 在此处检查对非数组型变量使用数组访问操作符
+a47:gen(L.addr '=' E.addr)

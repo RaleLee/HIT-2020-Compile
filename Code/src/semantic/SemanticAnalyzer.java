@@ -19,6 +19,9 @@ public class SemanticAnalyzer {
 
   public final List<String> addrQueue = new ArrayList<>();
   public final List<ThreeAddr> answers = new ArrayList<>();
+  public String wrongEnd = null;
+  public List<Integer> arrayWidth = new ArrayList<>();
+
   public final Map<Integer, List<Integer>> sons = new HashMap<>();
   public final Map<String, Pair<String, Integer>> symbolList = new HashMap<>();
   public int offset;
@@ -26,6 +29,17 @@ public class SemanticAnalyzer {
   public String tType;
   public int nextQuad;
   public int wWidth;
+  public int arrayElementWidth;
+
+  public static void main(String[] args) {
+    GrammarAnalyzer grammarAnalyzer = new GrammarAnalyzer(new File(SemanticAnalyzer.grammarPath));
+    Pair<List<PToken>, List<Integer>> tempPair = grammarAnalyzer
+        .Analyzer(GrammarAnalyzer.getTokensFromPath(correctTestPath));
+//    SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+//    semanticAnalyzer.analyzer(tempPair, grammarAnalyzer);
+//    System.out.println(String.join("\n", semanticAnalyzer.getResults()));
+  }
+
   //语义分析所用的全局变量，会对内容进行更改
   public List<Production> productions;
   public List<PToken> pTokens;
@@ -42,20 +56,30 @@ public class SemanticAnalyzer {
     this.answers.clear();
   }
 
-  public static void main(String[] args) {
-    GrammarAnalyzer grammarAnalyzer = new GrammarAnalyzer(new File(SemanticAnalyzer.grammarPath));
-    Pair<List<PToken>, List<Integer>> tempPair = grammarAnalyzer
-        .Analyzer(GrammarAnalyzer.getTokensFromPath(correctTestPath));
-    SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
-    semanticAnalyzer.analyzer(tempPair, grammarAnalyzer);
-    System.out.println(String.join("\n", semanticAnalyzer.getResults()));
+  public static void makelist(Integer tempQuad) {
+
+  }
+
+  public void setWrongEnd(String wrongEnd) {
+    this.wrongEnd = wrongEnd;
+  }
+
+  public String newTemp() {
+    return "t" + (this.nowTempLabel++);
   }
 
   public void enter(String name, String type) throws Exception {
-    if (this.symbolList.containsKey("name")) {
+    if (this.symbolList.containsKey(name)) {
       throw new Exception("Repeat define!");
     }
     this.symbolList.put(name, new Pair<>(type, offset));
+  }
+
+  public Pair<String, Integer> lookUp(String key) throws Exception {
+    if (!this.symbolList.containsKey(key)) {
+      throw new Exception("UnDefine！");
+    }
+    return this.symbolList.get(key);
   }
 
   public void setOffset(int offset) {
@@ -107,6 +131,9 @@ public class SemanticAnalyzer {
         System.out.println("#a" + actionNumber + "#");
         System.out.println(curProduction.toTrueString());
         Actions.actionEntry(actionNumber, nowNodesToAction, this);
+        if (this.wrongEnd != null) {
+          return;
+        }
         for (PToken nowNodes : nowNodesToAction) {
           System.out.println(nowNodes + "addr:" + nowNodes.addr);
           System.out.println(nowNodes + "type:" + nowNodes.type);
@@ -116,6 +143,9 @@ public class SemanticAnalyzer {
         Integer nextNode = iterator.next();
         nowNodesToAction.add(pTokens.get(nextNode));
         dfsGrammarTree(nextNode, curNode);
+        if (this.wrongEnd != null) {
+          return;
+        }
       }
     }
   }

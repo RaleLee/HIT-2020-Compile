@@ -2,26 +2,40 @@ package semantic;
 
 import grammar.PToken;
 import java.util.List;
+import javafx.util.Pair;
 
 public class Actions {
 
-  private static void newTempAndGen(PToken t1, PToken t2,
+  private static void newTempAndGenOpeartorUseAddr(PToken t1, PToken t2,
       PToken t3, SemanticAnalyzer semanticAnalyzer, String type) {
-    t1.setAddr("t" + semanticAnalyzer.nowTempLabel);
-    semanticAnalyzer.setNowTempLabel(semanticAnalyzer.nowTempLabel + 1);
-    String[] elements = new String[3];
-    elements[0] = t2.addr;
-    elements[1] = t3.addr;
-    elements[2] = t1.addr;
-    if (type.equals("-")) {
-      semanticAnalyzer.answers.add(new ThreeAddr(t1.addr + "=-" + t2.addr + type + t3.addr, type,
-          elements));
-    } else if (type.equals("/")) {
-      semanticAnalyzer.answers.add(new ThreeAddr(t1.addr + "=1/" + t2.addr + type + t3.addr, type,
-          elements));
+    t1.setAddr(semanticAnalyzer.newTemp());
+    if (t2.type.equals(t3.type)) {
+      semanticAnalyzer.answers.add(new ThreeAddr(t1.addr + "=" + t2.addr + type + t3.addr, type,
+          new String[]{t2.addr, t3.addr, t1.addr}));
+      t1.setType(t2.type);
+    } else if (t2.type.equals("float") || t2.type.equals("double")) {
+      if (t3.type.equals("int")) {
+        String temp = semanticAnalyzer.newTemp();
+        semanticAnalyzer.answers.add(new ThreeAddr(temp + "=" + "intToReal" + t2.addr, "=",
+            new String[]{"intToReal", t2.addr, temp}));
+        semanticAnalyzer.answers.add(new ThreeAddr(t1.addr + "=" + temp + type + t3.addr, type,
+            new String[]{temp, t3.addr, t1.addr}));
+        t1.setType(t2.type);
+      }
+    } else if (t3.type.equals("float") || t3.type.equals("double")) {
+      if (t2.type.equals("int")) {
+        String temp = semanticAnalyzer.newTemp();
+        semanticAnalyzer.answers.add(new ThreeAddr(temp + "=" + "intToReal" + t3.addr, "=",
+            new String[]{"intToReal", t3.addr, temp}));
+        semanticAnalyzer.answers.add(new ThreeAddr(t1.addr + "=" + t2.addr + type + temp, type,
+            new String[]{t2.addr, temp, t1.addr}));
+        t1.setType(t3.type);
+      }
     } else {
-      semanticAnalyzer.answers.add(new ThreeAddr(t1.addr + '=' + t2.addr + type + t3.addr, type,
-          elements));
+      System.out
+          .println("Error at Line " + t1.lineIndex + ":" + "Operation Type Mismatch!");
+      semanticAnalyzer
+          .setWrongEnd("Error at Line " + t1.lineIndex + ":" + "Operation Type Mismatch!");
     }
   }
 
@@ -39,23 +53,25 @@ public class Actions {
     try {
       semanticAnalyzer.enter(Identifier.lexeme, T.type);
     } catch (Exception e) {
-      System.out.println("Error at Line " + D.lineIndex + ":Repeat Define!");
-      System.exit(-1);
+      System.out.println("Error at Line " + D.lineIndex + ":" + e.getMessage());
+      semanticAnalyzer.setWrongEnd("Error at Line " + D.lineIndex + ":" + e.getMessage());
+      return;
     }
     semanticAnalyzer.setOffset(semanticAnalyzer.offset + T.width);
   }
 
-  private static void action3(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer){
+  private static void action3(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken D = nowNodes.get(0);
     PToken proc = nowNodes.get(1);
     PToken X = nowNodes.get(2);
     PToken Identifier = nowNodes.get(3);
     try {
       semanticAnalyzer.enter(Identifier.lexeme, Identifier.type);
-    } catch (Exception e){
+    } catch (Exception e) {
       // TODO: fill the exception condition ???
-      System.out.println("Error at Line " + D.lineIndex + ": ???");
-      System.exit(-1);
+      System.out.println("Error at Line " + D.lineIndex + ":" + e.getMessage());
+      semanticAnalyzer.setWrongEnd("Error at Line " + D.lineIndex + ":" + e.getMessage());
+      return;
     }
   }
 
@@ -65,28 +81,18 @@ public class Actions {
     PToken Identifier = nowNodes.get(2);
     try {
       semanticAnalyzer.enter(Identifier.lexeme, Identifier.type);
-    } catch (Exception e){
+    } catch (Exception e) {
       // TODO: fill the exception condition ???
-      System.out.println("Error at Line " + D.lineIndex + ": ???");
-      System.exit(-1);
+      System.out.println("Error at Line " + D.lineIndex + ":" + e.getMessage());
     }
   }
 
-  // TODO: action5 has a little problem
-  // TODO: Remove this Action
-  private static void action5(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
-    PToken A = nowNodes.get(0);
-    PToken sp = nowNodes.get(1);
-    PToken Identifier = nowNodes.get(2);
-    PToken A2 = nowNodes.get(3);
-
-  }
 
   private static void action6(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken C = nowNodes.get(0);
     PToken Num = nowNodes.get(2);
-    PToken C1 = nowNodes.get(3);
-    C.setType(Num.lexeme + C1.type);
+    PToken C1 = nowNodes.get(4);
+    C.setType("array(" + Num.lexeme + ',' + C1.type + ")");
     C.setWidth(Integer.parseInt(Num.lexeme) * C1.width);
   }
 
@@ -121,10 +127,22 @@ public class Actions {
   }
 
   // TODO: Action12~19
+  private static void action14(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Identifier = nowNodes.get(1);
+    PToken E = nowNodes.get(3);
+    try {
+      semanticAnalyzer.lookUp(Identifier.lexeme);
+      semanticAnalyzer.answers.add(new ThreeAddr(Identifier.lexeme + "=" + E.addr, "=",
+          new String[]{Identifier.lexeme, " ", E.addr}));
+    } catch (Exception e) {
+      System.out.println("Error at Line " + Identifier.lineIndex + ":" + e.getMessage());
+      semanticAnalyzer.setWrongEnd("Error at Line " + Identifier.lineIndex + ":" + e.getMessage());
+    }
+  }
 
   private static void action20(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken U = nowNodes.get(0);
-    // TODO: 好像这个也是一个跨行的 没有看到nextquad在哪里
+    U.setQuad(semanticAnalyzer.nextQuad);
   }
 
   private static void action22(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
@@ -146,60 +164,76 @@ public class Actions {
     PToken E = nowNodes.get(0);
     PToken Y = nowNodes.get(1);
     PToken Ep = nowNodes.get(2);
-    newTempAndGen(E, Y, Ep, semanticAnalyzer, "+");
+    newTempAndGenOpeartorUseAddr(E, Y, Ep, semanticAnalyzer, "+");
   }
 
   private static void action30(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Ep = nowNodes.get(0);
     PToken Y = nowNodes.get(2);
     PToken EpR = nowNodes.get(3);
-    newTempAndGen(Ep, Y, EpR, semanticAnalyzer, "+");
+    newTempAndGenOpeartorUseAddr(Ep, Y, EpR, semanticAnalyzer, "+");
   }
 
   private static void action31(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Y = nowNodes.get(0);
     PToken Z = nowNodes.get(1);
     PToken Yp = nowNodes.get(2);
-    newTempAndGen(Y, Z, Yp, semanticAnalyzer, "*");
+    newTempAndGenOpeartorUseAddr(Y, Z, Yp, semanticAnalyzer, "*");
   }
 
   private static void action32(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Yp = nowNodes.get(0);
     PToken Z = nowNodes.get(2);
     PToken YpR = nowNodes.get(3);
-    newTempAndGen(Yp, Z, YpR, semanticAnalyzer, "*");
+    newTempAndGenOpeartorUseAddr(Yp, Z, YpR, semanticAnalyzer, "*");
   }
 
   private static void action33(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Z = nowNodes.get(0);
     PToken E = nowNodes.get(2);
     Z.setAddr(E.addr);
+    Z.setType(E.type);
+  }
+
+  private static void action34(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Z = nowNodes.get(0);
+    PToken Identifier = nowNodes.get(1);
+    try {
+      Pair<String, Integer> tempPair = semanticAnalyzer.lookUp(Identifier.lexeme);
+      Z.setAddr(Identifier.lexeme);
+      Z.setType(tempPair.getKey());
+    } catch (Exception e) {
+      System.out.println("Error at Line " + Z.lineIndex + ":" + e.getMessage());
+      semanticAnalyzer.setWrongEnd("Error at Line " + Z.lineIndex + ":" + e.getMessage());
+    }
   }
 
   private static void action35(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Z = nowNodes.get(0);
     PToken NUM = nowNodes.get(1);
     Z.setAddr(NUM.lexeme);
+    Z.setType("int");
   }
 
   private static void action36(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Z = nowNodes.get(0);
     PToken Float = nowNodes.get(1);
     Z.setAddr(Float.lexeme);
+    Z.setType("float");
   }
 
   private static void action38(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Ep = nowNodes.get(0);
     PToken Y = nowNodes.get(2);
     PToken EpR = nowNodes.get(3);
-    newTempAndGen(Ep, Y, EpR, semanticAnalyzer, "-");
+    newTempAndGenOpeartorUseAddr(Ep, EpR, Y, semanticAnalyzer, "-");
   }
 
   private static void action39(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Yp = nowNodes.get(0);
     PToken Z = nowNodes.get(2);
     PToken YpR = nowNodes.get(3);
-    newTempAndGen(Yp, Z, YpR, semanticAnalyzer, "/");
+    newTempAndGenOpeartorUseAddr(Yp, YpR, Z, semanticAnalyzer, "/");
   }
 
   private static void action40(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
@@ -211,11 +245,91 @@ public class Actions {
   private static void action41(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Ep = nowNodes.get(0);
     Ep.setAddr("0");
+    Ep.setType("int");
   }
 
   private static void action42(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Yp = nowNodes.get(0);
     Yp.setAddr("1");
+    Yp.setType("int");
+  }
+
+  private static void action43(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken L = nowNodes.get(0);
+    PToken Identifer = nowNodes.get(1);
+    PToken Lp = nowNodes.get(2);
+    try {
+      Pair<String, Integer> tempPair = semanticAnalyzer.lookUp(Identifer.lexeme);
+      String tempLeft = Identifer.lexeme + "[" + Lp.addr + "]";
+      if (!tempPair.getKey().contains("array")) {
+        tempLeft = Identifer.lexeme;
+      }
+      L.setAddr(tempLeft);
+    } catch (Exception e) {
+      System.out.println("Error at Line " + Identifer.lineIndex + ":" + e.getMessage());
+      semanticAnalyzer.setWrongEnd("Error at Line " + Identifer.lineIndex + ":" + e.getMessage());
+    }
+  }
+
+  private static void action44(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Lpl = nowNodes.get(0);
+    PToken E = nowNodes.get(2);
+    PToken Lpr = nowNodes.get(4);
+    if (!Lpr.type.equals("int")) {
+      System.out.println("Error at Line " + Lpl.lineIndex + ":"
+          + "Using Array Access Operators For Non Array Variable");
+      semanticAnalyzer.setWrongEnd("Error at Line " + Lpl.lineIndex + ":"
+          + "Using Array Access Operators For Non Array Variable");
+      return;
+    }
+    if (!E.type.equals("int")) {
+      System.out.println("Error at Line " + E.lineIndex + ":" + "Non Integer Index!");
+      semanticAnalyzer.setWrongEnd("Error at Line " + E.lineIndex + ":" + "Non Integer Index!");
+    } else {
+      newTempAndGenOpeartorUseAddr(Lpl, E, Lpr, semanticAnalyzer, "*");
+    }
+  }
+
+  private static void action45(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken L = nowNodes.get(0);
+    PToken Identifer = nowNodes.get(1);
+    try {
+      Pair<String, Integer> tempPair = semanticAnalyzer.lookUp(Identifer.lexeme);
+      L.setType(tempPair.getKey());
+      L.setWidth(tempPair.getValue());
+      semanticAnalyzer.arrayWidth.clear();
+      String tempType = tempPair.getKey();
+      semanticAnalyzer.arrayElementWidth =
+          util.getTypeSize(tempType);
+      semanticAnalyzer.arrayWidth.clear();
+      if (tempType.contains("array")) {
+        semanticAnalyzer.arrayWidth = util.getNumbers(tempType);
+      }
+    } catch (Exception e) {
+      System.out.println("Error at Line " + Identifer.lineIndex + ":" + e.getMessage());
+      semanticAnalyzer.setWrongEnd("Error at Line " + Identifer.lineIndex + ":" + e.getMessage());
+      return;
+    }
+  }
+
+  private static void action46(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Lp = nowNodes.get(0);
+    Lp.setAddr(semanticAnalyzer.newTemp());
+    Lp.width = semanticAnalyzer.arrayElementWidth;
+    Lp.setType("int");
+    if (semanticAnalyzer.arrayWidth.isEmpty()) {
+      Lp.setType("ERROR");//用于检查对非数组变量的数组下标访问
+    }
+    semanticAnalyzer.answers
+        .add(new ThreeAddr(Lp.addr + "=" + Lp.width, "=",
+            new String[]{String.valueOf(Lp.width), " ", Lp.addr}));
+  }
+
+  private static void action47(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken L = nowNodes.get(1);
+    PToken E = nowNodes.get(3);
+    semanticAnalyzer.answers.add(new ThreeAddr(L.addr + "=" + E.addr, "=",
+        new String[]{String.valueOf(E.addr), " ", L.addr}));
   }
 
   //按照父亲——从左兄弟到自己的顺序存放的，目前action需要的节点的编号
@@ -228,11 +342,17 @@ public class Actions {
       case 2:
         action2(nowNodes, semanticAnalyzer);
         break;
+      case 6:
+        action6(nowNodes, semanticAnalyzer);
+        break;
       case 7:
         action7(nowNodes, semanticAnalyzer);
         break;
       case 8:
         action8(nowNodes, semanticAnalyzer);
+        break;
+      case 14:
+        action14(nowNodes, semanticAnalyzer);
         break;
       case 28:
         action28(nowNodes, semanticAnalyzer);
@@ -246,8 +366,14 @@ public class Actions {
       case 32:
         action32(nowNodes, semanticAnalyzer);
         break;
+      case 34:
+        action34(nowNodes, semanticAnalyzer);
+        break;
       case 35:
         action35(nowNodes, semanticAnalyzer);
+        break;
+      case 36:
+        action36(nowNodes, semanticAnalyzer);
         break;
       case 38:
         action38(nowNodes, semanticAnalyzer);
@@ -263,6 +389,21 @@ public class Actions {
         break;
       case 42:
         action42(nowNodes, semanticAnalyzer);
+        break;
+      case 43:
+        action43(nowNodes, semanticAnalyzer);
+        break;
+      case 44:
+        action44(nowNodes, semanticAnalyzer);
+        break;
+      case 45:
+        action45(nowNodes, semanticAnalyzer);
+        break;
+      case 46:
+        action46(nowNodes, semanticAnalyzer);
+        break;
+      case 47:
+        action47(nowNodes, semanticAnalyzer);
         break;
       default:
         System.out.println("ERROR ACTION!");

@@ -382,6 +382,7 @@ public class GrammarAnalyzer {
     // Add direct symbol
     for (Production pro : productions) {
       List<String> right = pro.getRight();
+
       if (endSymbols.contains(right.get(0))) {
 //        System.out.println(pro.getLeft());
         firstSet.get(pro.getLeft()).add(right.get(0));

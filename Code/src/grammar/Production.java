@@ -24,7 +24,7 @@ public class Production {
     this.left = left;
     Iterator<String> iterator = right.iterator();
     while (iterator.hasNext()) {
-      String temp = iterator.next();
+      String temp = iterator.next().trim();
       this.trueRight.add(temp);
       if (temp.contains("#a")) {
         this.actions.add(temp);
