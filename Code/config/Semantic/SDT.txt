@@ -9,24 +9,25 @@ q int队列 全局
 .addr string ???
 
 p全局临时变量
-
+ret全局临时变量
 a1:T.type=C.type;T.width=C.width;
 a2:enter(IDENTIFIER.lexeme,T.type,offset);offset=offset+T.width;
-a3:type='proc';enter(id.lexeme,type,offset);
-a4:type='record';enter(id.lexeme,type,offset);
+a3:id.type='proc';enter(id.lexeme,type,offset);retType=X.type;
+a4:id.type='record';enter(id.lexeme,type,offset);
 a6:C.type=array( NUM.val,C1.type); C.width=NUM.val*C1.width;
 a7:C.type=t; C.width=w;
 a8:X.type=int ;X.width=4;
 a9:X.type=float ;X.width=4;
 a10:X.type=char ;X.width=1;
 a11:X.type=double ;X.width=8;
-a12:backpatch(B.truelist, U1.quad); backpatch(B.falselist, U2.quad); S.nextlist=merge(merge(S1.nextlist,W.nextlist),S2.nextlist);
-a13:gen( L.array ‘[’ L.offset ‘]’ ‘=’ E.addr );
-a14:p=lookup(id.lexeme); if p==nil then error ;gen(id.lexeme '=' E.addr );
-a15:n=0;for q中的每个t do {gen('param' t);n=n+1;}gen('call' IDENTIFIER.addr ',' n)
-a16:S.nextlist = B.falselist;backpatch( S1.nextlist, U1.quad );backpatch( B.truelist, U2.quad );gen('goto' M1.quad);
-a17:N.nextlist = makelist(nextquad); gen('goto_');
-a18:L.array = lookup(IDENTIFIER.lexeme); if L.array==nil then error ; L.type = L.array.type.elem ;L.offset = newtemp();gen( L.offset ‘=’ E.addr ‘*’ L.type.width );
+a12:backpatch(B.truelist, U1.quad);
+backpatch(B.falselist, U2.quad); S.nextlist=merge(merge(S1.nextlist,W.nextlist),S2.nextlist);
+#a13:gen( L.array ‘[’ L.offset ‘]’ ‘=’ E.addr );
+#a14:te=lookup(id.lexeme); if te==nil then error ;gen(id.lexeme '=' E.addr );
+a15:lookup(id.lexeme);检查是否调用的是过程n=0;for q中的每个t do {gen('param' t);n=n+1;}gen('call' IDENTIFIER.addr ',' n) 检查全局q和全局qtype，检查过程调用类型和参数数量
+a16:S.nextlist = B.falselist;backpatch( S1.nextlist, U1.quad );backpatch( B.truelist, U2.quad );gen('goto' M1.quad);//Maybe M1 is U1
+a17:N.nextlist = makelist(nextquad); gen('goto_');//Maybe W
+#a18:L.array = lookup(IDENTIFIER.lexeme); if L.array==nil then error ; L.type = L.array.type.elem ;L.offset = newtemp();gen( L.offset ‘=’ E.addr ‘*’ L.type.width );
 a19:B.truelist= merge(O1.truelist,O2.truelist );B.falselist = O2.falselist ;backpatch(O1.falselist, U.quad );
 a20:U.quad = nextquad ;
 a21:O.truelist= Q2.truelist;O.falselist = merge(Q1.falselist,Q2.falselist) ;backpatch(Q1.truelist, U.quad );
@@ -35,7 +36,7 @@ a23:Q.truelist = B.truelist ; Q.falselist = B.falselist ;
 a24:Q.truelist = makelist(nextquad);Q.falselist = makelist(nextquad+1);gen('if ' E1.addr relop E2.addr 'goto _');gen('goto _');
 a25:Q.truelist = makelist(nextquad);gen('goto _');
 a26:Q.falselist = makelist(nextquad);gen('goto _');
-a27:将E.addr添加到q的队尾
+a27:初始化全局q
 a28:E.addr=newtemp();检查Y和E’的type;E.type = Y.type;gen(E.addr '=' Y.addr '+' E'.addr);
 a30:E'.addr=newtemp()检查Y和E’的type;gen(E'.addr '=' Y.addr '+' E'(right).addr)
 a31:Y.addr=newtemp();检查Y和E’的type;gen(Y.addr '=' Z.addr '*' Y'.addr);
@@ -44,7 +45,7 @@ a33:Z.addr=E.addr Z.type=E.type
 a34:Z.addr=lookup(IDENTIFIER.lexeme)(这里的意思是lookup查找是否存在，然后再把词法值直接给addr);if Z.addr==nil then error;Z.type = IDENTIFIER.type(lookup里拿到的)
 a35:Z.addr=NUM.lex Z.type="int"
 a36:Z.addr=FLOAT.lex Z.type="float"
-a37:gen('return' E.addr)
+a37:检查返回E.type和之前存好的retType
 a38:E.addr=newtemp();检查E'和Y的type;gen(E.addr '=' E'.addr '-' Y.addr);
 a39:Y'.addr=newtemp();检查Z和Y’的type;gen(Y'.addr '=' Z.addr '/' Y'(right).addr)
 a40:t=X.type;w=X.width;
@@ -54,4 +55,11 @@ a43:
 a44:p=newtemp();gen(t '=' E.addr '*' a.width); gen(offset '=' offset '+' t );a=a.array; 在这里检查E是否为合法整数下标
 a45:P = lookup(IDENTIFIER.lexme) L.type=p.type L.width=p.with check repeat define 记录一个全局变量arraywidth，存储数组各维宽度 arrayElewidth 记录数组类型的宽度
 a46:L'.addr=newtemp();L'.width = arrayEleWidth;gen(L'.addr = L'.width);L'.type = int 在此处检查对非数组型变量使用数组访问操作符
-a47:gen(E.addr '=' L.addr); if L.addr==nil then error
+a47:gen(L.addr '=' E.addr); if E.addr==nil then error
+a48:E.addr=newtemp();gen(E.addr '=' L.addr); if L.addr==nil then error
+a49:relop.addr = endSymbols.lexme
+a50:M.paramLen = M'.paramLen + 1,M.typelist=merge(M'.typelist,makelist(X.type),)
+a51:M.typelist = newTypeList();M.paramLen = 0
+a52:enterfunctionlist(id.lexme,m.typeList,m.parmLen)
+a53:全局q加入E.addr 全局qtype加入E.type
+a54:全局q加入E.addr 全局qtype加入E.type

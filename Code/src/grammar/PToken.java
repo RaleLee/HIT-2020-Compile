@@ -22,7 +22,9 @@ public class PToken {
   public List<Integer> trueList = new ArrayList<>();
   public List<Integer> falseList = new ArrayList<>();
   public List<Integer> nextList = new ArrayList<>();
+  public List<String> typeList = new ArrayList<>();
   public int quad = 0;
+  public int paramLen = 0;
 
   public void setLineIndex(int lineIndex) {
     this.lineIndex = lineIndex;

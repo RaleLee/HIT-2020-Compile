@@ -37,6 +37,16 @@ public class util {
     return result;
   }
 
+  public static String getTypeInArrayType(String arrayType) {
+    String[] types = new String[]{"int", "float", "char", "double", "string"};
+    for (String type : types) {
+      if (arrayType.contains(type)) {
+        return type;
+      }
+    }
+    return null;
+  }
+
   public static void main(String[] args) {
     System.out.println(getNumbers("int"));
   }

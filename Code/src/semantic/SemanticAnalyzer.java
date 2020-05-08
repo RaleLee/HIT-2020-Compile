@@ -5,7 +5,9 @@ import grammar.PToken;
 import grammar.Production;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,29 +19,21 @@ public class SemanticAnalyzer {
   public static final String grammarPath = "config\\Semantic\\LL1-Semantic.txt";
   public static final String correctTestPath = "inputFile\\semanticTest\\semanticCorrectTest.txt";
 
-  public final List<String> addrQueue = new ArrayList<>();
+  public final List<Pair<String, String>> paramQueue = new ArrayList<>();//Pair:addr type
   public final List<ThreeAddr> answers = new ArrayList<>();
-  public String wrongEnd = null;
+  public final Map<String, Pair<List<String>, Integer>> functionList = new HashMap<>();
   public List<Integer> arrayWidth = new ArrayList<>();
 
   public final Map<Integer, List<Integer>> sons = new HashMap<>();
   public final Map<String, Pair<String, Integer>> symbolList = new HashMap<>();
+  public String wrongEnd;
   public int offset;
   public int nowTempLabel;
   public String tType;
+  public String retType;
   public int nextQuad;
   public int wWidth;
   public int arrayElementWidth;
-
-  public static void main(String[] args) {
-    GrammarAnalyzer grammarAnalyzer = new GrammarAnalyzer(new File(SemanticAnalyzer.grammarPath));
-    Pair<List<PToken>, List<Integer>> tempPair = grammarAnalyzer
-        .Analyzer(GrammarAnalyzer.getTokensFromPath(correctTestPath));
-//    SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
-//    semanticAnalyzer.analyzer(tempPair, grammarAnalyzer);
-//    System.out.println(String.join("\n", semanticAnalyzer.getResults()));
-  }
-
   //语义分析所用的全局变量，会对内容进行更改
   public List<Production> productions;
   public List<PToken> pTokens;
@@ -47,17 +41,58 @@ public class SemanticAnalyzer {
 
   //信息变量，不会更改
   public SemanticAnalyzer() {
+    this.reSet();
+  }
+
+  public static void main(String[] args) {
+    GrammarAnalyzer grammarAnalyzer = new GrammarAnalyzer(new File(SemanticAnalyzer.grammarPath));
+    Pair<List<PToken>, List<Integer>> tempPair = grammarAnalyzer
+        .Analyzer(GrammarAnalyzer.getTokensFromPath(correctTestPath));
+    SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+    semanticAnalyzer.analyzer(tempPair, grammarAnalyzer);
+    System.out.println(String.join("\n", semanticAnalyzer.getResults()));
+  }
+
+  public static <T> List<T> makeList(T tempQuad) {
+    return Collections.singletonList(tempQuad);
+  }
+
+  public static <T> List<T> mergeList(List<T> aList, List<T> bList) {
+    List<T> t1 = new ArrayList<>(aList);
+    List<T> t2 = new ArrayList<>(bList);
+    t1.addAll(t2);
+    return new ArrayList<>(new HashSet<>(t1));
+  }
+
+  private void reSet() {
     this.nowTempLabel = 1;
     this.nextQuad = 1;
     this.offset = 0;
     this.wWidth = -1;
     this.tType = null;
-    this.addrQueue.clear();
+    this.wrongEnd = null;
+    this.retType = null;
+    this.paramQueue.clear();
     this.answers.clear();
+    this.arrayWidth.clear();
+    this.sons.clear();
+    this.symbolList.clear();
+    this.functionList.clear();
   }
 
-  public static void makelist(Integer tempQuad) {
+  public void addParamQueue(Pair<String, String> tempPair) {
+    this.paramQueue.add(tempPair);
+  }
 
+  public void addAnswers(ThreeAddr threeAddr) {
+    this.answers.add(threeAddr);
+    this.setNextQuad(this.nextQuad + 1);
+  }
+
+  public void backPatch(Integer quad, List<Integer> answerList) {
+    for (int i : answerList) {
+      this.answers.get(i).backPatch(quad);
+    }
   }
 
   public void setWrongEnd(String wrongEnd) {
@@ -65,7 +100,8 @@ public class SemanticAnalyzer {
   }
 
   public String newTemp() {
-    return "t" + (this.nowTempLabel++);
+    this.setNowTempLabel(this.nowTempLabel + 1);
+    return "t" + this.nowTempLabel;
   }
 
   public void enter(String name, String type) throws Exception {
@@ -135,9 +171,11 @@ public class SemanticAnalyzer {
           return;
         }
         for (PToken nowNodes : nowNodesToAction) {
-          System.out.println(nowNodes + "addr:" + nowNodes.addr);
-          System.out.println(nowNodes + "type:" + nowNodes.type);
-          System.out.println(nowNodes + "width:" + nowNodes.width);
+          System.out.println(nowNodes + "type" + nowNodes.type);
+          System.out.println(nowNodes + "addr" + nowNodes.addr);
+//          System.out.println(nowNodes + "trueList" + nowNodes.trueList);
+//          System.out.println(nowNodes + "falseList" + nowNodes.falseList);
+//          System.out.println(nowNodes + "quad" + nowNodes.quad);
         }
       } else {
         Integer nextNode = iterator.next();

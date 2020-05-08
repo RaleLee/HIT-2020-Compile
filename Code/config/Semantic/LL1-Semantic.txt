@@ -10,10 +10,12 @@ P -> D P
 P -> S P
 P -> ε
 T -> X #a40# C #a1#
-D -> T IDENTIFIER #a2# C ; | proc X IDENTIFIER #a3# ( M ) { P } | record IDENTIFIER #a4# { P }
+D -> T IDENTIFIER #a2# C ; | proc X IDENTIFIER #a3# ( M ) { P } #a52# | record IDENTIFIER #a4# { P }
+M -> X IDENTIFIER M' #a50# | ε #a51#
+M' -> , X IDENTIFIER M' #a50# | ε #a51#
 C -> [ NUM ] C #a6# | ε #a7#
 X -> int #a8# | float #a9# | char #a10# | double #a11#
-S -> if B then U S W else U S #a12# | return E #a37# ; | call IDENTIFIER ( Elist ) ;  #a15# | while U B U S #a16# | { S } | L ASSIGN E ; #a47#
+S -> if B then U S W else U S #a12# | return E ; #a37# | call IDENTIFIER ( Elist ) ; #a15# | while U B U S #a16# | { S } | L ASSIGN E ; #a47#
 L -> IDENTIFIER #a45# L' #a43#
 L' -> [ E ] L' #a44# | ε #a46#
 W -> ε #a17#
@@ -23,13 +25,13 @@ U -> ε #a20#
 O -> Q O'
 O' -> ε | && U Q O' #a21#
 Q -> NOT B #a22# | [ B ] #a23# | E relop E #a24# | true #a25# | false #a26#
-relop -> < | NE | <= | > | >= | EQL
-V -> ++ | --
-Elist -> E Elist #a27# |  , E Elist' | ε
-E -> Y E' #a28# | L #a47#
+relop -> < #a49# | NE #a49# | <= #a49# | > #a49# | >= #a49# | EQL #a49#
+Elist -> E Elist' #a53#
+Elist' -> , E Elist' #a54# | ε #a27#
+E -> Y E' #a28#
 E' -> ADD Y E' #a30# | ε #a41# | SUB Y E' #a38#
 Y -> Z Y' #a31#
 Y' -> * Z Y' #a32# | ε #a42# | / Z Y' #a39#
 Z -> ( E ) #a33#
-Z -> IDENTIFIER #a34# | NUM #a35# | FLOAT #a36#
+Z -> L #a48# | NUM #a35# | FLOAT #a36#
 F -> IDENTIFIER | CHAR | STRING | NUM | SCI-NUM | FLOAT

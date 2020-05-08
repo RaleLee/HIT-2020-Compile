@@ -4,7 +4,7 @@ public class ThreeAddr {
 
   static String[] types = {"+", "-", "*", "/", "=", "relop", "goto", "param", "call", "return",
       "=[]", "[]=", "&", "=*", "*="};
-  private final String content;
+  private String content;
   private final String type;
   private final String[] elements;
 
@@ -12,6 +12,11 @@ public class ThreeAddr {
     this.content = content;
     this.type = type;
     this.elements = elements;
+  }
+
+  public void backPatch(Integer quad) {
+    this.content = this.content.replace("_", quad.toString());
+    this.elements[2] = quad.toString();
   }
 
   @Override
