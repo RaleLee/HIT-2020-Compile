@@ -19,10 +19,10 @@ S -> if B then U S W else U S #a12# | return E ; #a37# | call IDENTIFIER ( Elist
 L -> IDENTIFIER #a45# L' #a43#
 L' -> [ E ] L' #a44# | ε #a46#
 W -> ε #a17#
-B -> O B'
+B -> O B' #a55#
 B' -> || U O B' #a19# | ε
 U -> ε #a20#
-O -> Q O'
+O -> Q O' #a56#
 O' -> ε | && U Q O' #a21#
 Q -> NOT B #a22# | [ B ] #a23# | E relop E #a24# | true #a25# | false #a26#
 relop -> < #a49# | NE #a49# | <= #a49# | > #a49# | >= #a49# | EQL #a49#

@@ -28,9 +28,6 @@ a15:lookup(id.lexeme);检查是否调用的是过程n=0;for q中的每个t do {g
 a16:S.nextlist = B.falselist;backpatch( S1.nextlist, U1.quad );backpatch( B.truelist, U2.quad );gen('goto' M1.quad);//Maybe M1 is U1
 a17:N.nextlist = makelist(nextquad); gen('goto_');//Maybe W
 #a18:L.array = lookup(IDENTIFIER.lexeme); if L.array==nil then error ; L.type = L.array.type.elem ;L.offset = newtemp();gen( L.offset ‘=’ E.addr ‘*’ L.type.width );
-a19:B.truelist= merge(O1.truelist,O2.truelist );B.falselist = O2.falselist ;backpatch(O1.falselist, U.quad );
-a20:U.quad = nextquad ;
-a21:O.truelist= Q2.truelist;O.falselist = merge(Q1.falselist,Q2.falselist) ;backpatch(Q1.truelist, U.quad );
 a22:Q.truelist = B.falselist; Q.falselist = B.truelist;
 a23:Q.truelist = B.truelist ; Q.falselist = B.falselist ;
 a24:Q.truelist = makelist(nextquad);Q.falselist = makelist(nextquad+1);gen('if ' E1.addr relop E2.addr 'goto _');gen('goto _');
@@ -46,7 +43,7 @@ a34:Z.addr=lookup(IDENTIFIER.lexeme)(这里的意思是lookup查找是否存在�
 a35:Z.addr=NUM.lex Z.type="int"
 a36:Z.addr=FLOAT.lex Z.type="float"
 a37:检查返回E.type和之前存好的retType
-a38:E.addr=newtemp();检查E'和Y的type;gen(E.addr '=' E'.addr '-' Y.addr);
+a38:E.addr=newtemp();检查E'和Y的type;gen(E.addr '=' E'.addr '-' Y.addr);
 a39:Y'.addr=newtemp();检查Z和Y’的type;gen(Y'.addr '=' Z.addr '/' Y'(right).addr)
 a40:t=X.type;w=X.width;
 a41:E'.addr=0; 赋值TYPE
@@ -63,3 +60,8 @@ a51:M.typelist = newTypeList();M.paramLen = 0
 a52:enterfunctionlist(id.lexme,m.typeList,m.parmLen)
 a53:全局q加入E.addr 全局qtype加入E.type
 a54:全局q加入E.addr 全局qtype加入E.type
+a55:if B'.truelist不为空 B.truelist= merge(O1.truelist,B'.truelist );if B'.falselist不为空 B.falselist = B'.falselist ; backpatch'B'的回填属性'list,B'.quad);
+a19:B'.truelist= O2.truelist ;B'.falselist = O2.falselist ; 给B'创建一个回填属性(true或false)值为U.quad(回填列表为false)
+a20:U.quad = nextquad ;
+a21:O'.truelist= Q.truelist ;B'.falselist = Q.falselist ; 给O'创建一个回填属性(true或false)值为U.quad(回填列表为true)
+a56:if O'.truelist不为空 O.truelist= merge(Q1.truelist,O'.truelist );if O'.falselist不为空 O.falselist = O'.falselist ; backpatch'O'的回填属性'list,O'.quad);
