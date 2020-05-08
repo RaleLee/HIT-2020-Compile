@@ -13,7 +13,7 @@ T -> X #a40# C #a1#
 D -> T IDENTIFIER #a2# C ; | proc X IDENTIFIER #a3# ( M ) { P } | record IDENTIFIER #a4# { P }
 C -> [ NUM ] C #a6# | ε #a7#
 X -> int #a8# | float #a9# | char #a10# | double #a11#
-S -> if B then U S W else U S #a12# | return E #a37# ; | IDENTIFIER ASSIGN E ; #a14# | call IDENTIFIER ( Elist ) ;  #a15# | while U B U S #a16# | { S } | L ASSIGN E ; #a47#
+S -> if B then U S W else U S #a12# | return E #a37# ; | call IDENTIFIER ( Elist ) ;  #a15# | while U B U S #a16# | { S } | L ASSIGN E ; #a47#
 L -> IDENTIFIER #a45# L' #a43#
 L' -> [ E ] L' #a44# | ε #a46#
 W -> ε #a17#
@@ -26,7 +26,7 @@ Q -> NOT B #a22# | [ B ] #a23# | E relop E #a24# | true #a25# | false #a26#
 relop -> < | NE | <= | > | >= | EQL
 V -> ++ | --
 Elist -> E Elist #a27# |  , E Elist' | ε
-E -> Y E' #a28#
+E -> Y E' #a28# | L #a47#
 E' -> ADD Y E' #a30# | ε #a41# | SUB Y E' #a38#
 Y -> Z Y' #a31#
 Y' -> * Z Y' #a32# | ε #a42# | / Z Y' #a39#
