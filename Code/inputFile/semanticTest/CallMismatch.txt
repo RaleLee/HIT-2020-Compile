@@ -1,0 +1,4 @@
+proc int inc (int par) { int t;t=par+3; return t;}
+float b;
+b=0.1;
+call inc(b);

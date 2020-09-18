@@ -11,17 +11,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import javafx.util.Pair;
 
 public class SemanticAnalyzer {
 
   public static final String grammarPath = "config\\Semantic\\LL1-Semantic.txt";
-  public static final String correctTestPath = "inputFile\\semanticTest\\semanticCorrectTest.txt";
+  public static final String correctTestPath = "inputFile\\semanticTest\\SemanticCorrectTest.txt";
 
   public final List<Pair<String, String>> paramQueue = new ArrayList<>();//Pair:addr type
   public final List<ThreeAddr> answers = new ArrayList<>();
-  public final Map<String, Pair<List<String>, Integer>> functionList = new HashMap<>();
+  public final Map<String, Pair<List<String>, Integer>> functionList = new HashMap<>();//pair:types paramsize
   public List<Integer> arrayWidth = new ArrayList<>();
 
   public final Map<Integer, List<Integer>> sons = new HashMap<>();
@@ -39,7 +40,6 @@ public class SemanticAnalyzer {
   public List<PToken> pTokens;
   public List<Integer> depths;
 
-  //信息变量，不会更改
   public SemanticAnalyzer() {
     this.reSet();
   }
@@ -49,7 +49,8 @@ public class SemanticAnalyzer {
     Pair<List<PToken>, List<Integer>> tempPair = grammarAnalyzer
         .Analyzer(GrammarAnalyzer.getTokensFromPath(correctTestPath));
     SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
-    semanticAnalyzer.analyzer(tempPair, grammarAnalyzer);
+    semanticAnalyzer
+        .analyzer(tempPair, grammarAnalyzer.getProductions(), grammarAnalyzer.getEndSymbols());
     System.out.println(String.join("\n", semanticAnalyzer.getResults()));
   }
 
@@ -65,8 +66,8 @@ public class SemanticAnalyzer {
   }
 
   private void reSet() {
-    this.nowTempLabel = 1;
-    this.nextQuad = 1;
+    this.nowTempLabel = 0;
+    this.nextQuad = 0;
     this.offset = 0;
     this.wWidth = -1;
     this.tType = null;
@@ -78,6 +79,11 @@ public class SemanticAnalyzer {
     this.sons.clear();
     this.symbolList.clear();
     this.functionList.clear();
+    this.sons.clear();
+    this.symbolList.clear();
+    this.functionList.clear();
+    this.paramQueue.clear();
+    this.arrayWidth.clear();
   }
 
   public void addParamQueue(Pair<String, String> tempPair) {
@@ -140,13 +146,16 @@ public class SemanticAnalyzer {
 
   public List<String> getResults() {
     List<String> outResults = new ArrayList<>();
-    for (ThreeAddr threeAddr : this.answers) {
-      outResults.add(threeAddr.toString());
+    for (int ind = 0; ind < this.answers.size(); ind++) {
+      outResults.add(ind + ": " + this.answers.get(ind).toString());
+    }
+    if (this.wrongEnd != null) {
+      outResults.add(this.wrongEnd);
     }
     return outResults;
   }
 
-  private void dfsGrammarTree(Integer curNode, Integer fatherNode) {
+  private void dfsGrammarTree(Integer curNode) {
     if (!sons.containsKey(curNode)) {
       return;
     }
@@ -170,17 +179,10 @@ public class SemanticAnalyzer {
         if (this.wrongEnd != null) {
           return;
         }
-        for (PToken nowNodes : nowNodesToAction) {
-          System.out.println(nowNodes + "type" + nowNodes.type);
-          System.out.println(nowNodes + "addr" + nowNodes.addr);
-//          System.out.println(nowNodes + "trueList" + nowNodes.trueList);
-//          System.out.println(nowNodes + "falseList" + nowNodes.falseList);
-//          System.out.println(nowNodes + "quad" + nowNodes.quad);
-        }
       } else {
         Integer nextNode = iterator.next();
         nowNodesToAction.add(pTokens.get(nextNode));
-        dfsGrammarTree(nextNode, curNode);
+        dfsGrammarTree(nextNode);
         if (this.wrongEnd != null) {
           return;
         }
@@ -188,13 +190,13 @@ public class SemanticAnalyzer {
     }
   }
 
-  public void analyzer(Pair<List<PToken>, List<Integer>> tempPair,
-      GrammarAnalyzer grammarAnalyzer) {
+  public void analyzer(Pair<List<PToken>, List<Integer>> tempPair, List<Production> tempProductions,
+      Set<String> endSymbols) {
+    this.reSet();
     System.out.println("Start Semantic");
-    //TODO：根据情况传入GA部分属性
     pTokens = new ArrayList<>(tempPair.getKey());
     depths = new ArrayList<>(tempPair.getValue());
-    productions = grammarAnalyzer.getProductions();
+    productions = tempProductions;
     Stack<Integer> fathers = new Stack<>();
     fathers.push(0);
     //忽略 $ 即pTokens的最后一个
@@ -213,14 +215,14 @@ public class SemanticAnalyzer {
     }
     int tokensLen = pTokens.size();
     for (int ind = 1; ind < tokensLen; ind++) {
-      if (!sons.containsKey(ind) && !grammarAnalyzer.checkTokenIsTerminal(pTokens.get(ind))) {
+      if (!sons.containsKey(ind) && !endSymbols.contains(pTokens.get(ind).token)) {
         sons.put(ind, new ArrayList<>());
         pTokens.add(new PToken(GrammarAnalyzer.epsilon, pTokens.get(ind).lineIndex));
         sons.put(ind, new ArrayList<>());
         sons.get(ind).add(pTokens.size() - 1);
       }
     }
-    dfsGrammarTree(0, -1);
+    dfsGrammarTree(0);
   }
 }
 

@@ -25,9 +25,11 @@ backpatch(B.falselist, U2.quad); S.nextlist=merge(merge(S1.nextlist,W.nextlist),
 #a13:gen( L.array ‘[’ L.offset ‘]’ ‘=’ E.addr );
 #a14:te=lookup(id.lexeme); if te==nil then error ;gen(id.lexeme '=' E.addr );
 a15:lookup(id.lexeme);检查是否调用的是过程n=0;for q中的每个t do {gen('param' t);n=n+1;}gen('call' IDENTIFIER.addr ',' n) 检查全局q和全局qtype，检查过程调用类型和参数数量
-a16:S.nextlist = B.falselist;backpatch( S1.nextlist, U1.quad );backpatch( B.truelist, U2.quad );gen('goto' M1.quad);//Maybe M1 is U1
+a16:S.nextlist = B.falselist;backpatch( S1.nextlist, U1.quad );backpatch( B.truelist, U2.quad );gen('goto' U1.quad);backPatch(B.falseList,nextQuad);
 a17:N.nextlist = makelist(nextquad); gen('goto_');//Maybe W
-#a18:L.array = lookup(IDENTIFIER.lexeme); if L.array==nil then error ; L.type = L.array.type.elem ;L.offset = newtemp();gen( L.offset ‘=’ E.addr ‘*’ L.type.width );
+a19:B'.truelist= O2.truelist ;B'.falselist = O2.falselist ; 给B'创建一个回填属性(true或false)值为U.quad(回填列表为false)
+a20:U.quad = nextquad ;
+a21:O'.truelist= Q.truelist ;O'.falselist = Q.falselist ; 给O'创建一个回填属性(true或false)值为U.quad(回填列表为true)
 a22:Q.truelist = B.falselist; Q.falselist = B.truelist;
 a23:Q.truelist = B.truelist ; Q.falselist = B.falselist ;
 a24:Q.truelist = makelist(nextquad);Q.falselist = makelist(nextquad+1);gen('if ' E1.addr relop E2.addr 'goto _');gen('goto _');
@@ -42,13 +44,13 @@ a33:Z.addr=E.addr Z.type=E.type
 a34:Z.addr=lookup(IDENTIFIER.lexeme)(这里的意思是lookup查找是否存在，然后再把词法值直接给addr);if Z.addr==nil then error;Z.type = IDENTIFIER.type(lookup里拿到的)
 a35:Z.addr=NUM.lex Z.type="int"
 a36:Z.addr=FLOAT.lex Z.type="float"
-a37:检查返回E.type和之前存好的retType
+a37:检查返回E.type和之前存好的retType;gen(return E.addr)
 a38:E.addr=newtemp();检查E'和Y的type;gen(E.addr '=' E'.addr '-' Y.addr);
 a39:Y'.addr=newtemp();检查Z和Y’的type;gen(Y'.addr '=' Z.addr '/' Y'(right).addr)
 a40:t=X.type;w=X.width;
 a41:E'.addr=0; 赋值TYPE
 a42:Y'.addr=1; 赋值TYPE
-a43:
+a43:生成数组类型表达式
 a44:p=newtemp();gen(t '=' E.addr '*' a.width); gen(offset '=' offset '+' t );a=a.array; 在这里检查E是否为合法整数下标
 a45:P = lookup(IDENTIFIER.lexme) L.type=p.type L.width=p.with check repeat define 记录一个全局变量arraywidth，存储数组各维宽度 arrayElewidth 记录数组类型的宽度
 a46:L'.addr=newtemp();L'.width = arrayEleWidth;gen(L'.addr = L'.width);L'.type = int 在此处检查对非数组型变量使用数组访问操作符
@@ -60,8 +62,11 @@ a51:M.typelist = newTypeList();M.paramLen = 0
 a52:enterfunctionlist(id.lexme,m.typeList,m.parmLen)
 a53:全局q加入E.addr 全局qtype加入E.type
 a54:全局q加入E.addr 全局qtype加入E.type
-a55:if B'.truelist不为空 B.truelist= merge(O1.truelist,B'.truelist );if B'.falselist不为空 B.falselist = B'.falselist ; backpatch'B'的回填属性'list,B'.quad);
-a19:B'.truelist= O2.truelist ;B'.falselist = O2.falselist ; 给B'创建一个回填属性(true或false)值为U.quad(回填列表为false)
-a20:U.quad = nextquad ;
-a21:O'.truelist= Q.truelist ;B'.falselist = Q.falselist ; 给O'创建一个回填属性(true或false)值为U.quad(回填列表为true)
-a56:if O'.truelist不为空 O.truelist= merge(Q1.truelist,O'.truelist );if O'.falselist不为空 O.falselist = O'.falselist ; backpatch'O'的回填属性'list,O'.quad);
+a55: B.truelist= merge(O1.truelist,B'.truelist );
+     if B'.falselist不为空 B.falselist = B'.falselist ;
+     else B.falselist=O’.falselist
+     backpatch(B'.bpTypelist,B'.quad);
+a56:O.falselist = merge(Q1.falselist,O'.falselist );
+    if O'.truelist不为空 O.truelist = O'.truelist ;
+    else O.truelist = Q.truelist ;
+    backpatch(O'.bpTypelist ',O'.quad);

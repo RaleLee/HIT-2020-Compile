@@ -3,10 +3,12 @@ package frontend;
 import grammar.GrammarAnalyzer;
 import grammar.PToken;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.util.Pair;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -15,6 +17,28 @@ import lexical.LexicalAnalyzer;
 import semantic.SemanticAnalyzer;
 
 public class SemanticGUI extends BaseGUI {
+
+  public static void main(String[] args) {
+    SemanticGUI semanticGUI = new SemanticGUI();
+    semanticGUI.show("语义分析");
+  }
+
+  private static JFrame generateSymbolList(SemanticAnalyzer semanticAnalyzer) {
+    List<String> symbolNames = new ArrayList<>(semanticAnalyzer.symbolList.keySet());
+    symbolNames.sort(String::compareTo);
+    Object[][] tempTable = new Object[symbolNames.size()][3];
+    List<String> columns = new ArrayList<>();
+    columns.add("Symbol");
+    columns.add("Type");
+    columns.add("Offset");
+    for (int row = 0; row < symbolNames.size(); row++) {
+      String symbolName = symbolNames.get(row);
+      tempTable[row][0] = symbolName;
+      tempTable[row][1] = semanticAnalyzer.symbolList.get(symbolName).getKey();
+      tempTable[row][2] = semanticAnalyzer.symbolList.get(symbolName).getValue();
+    }
+    return generateFrameWithTable(tempTable, columns);
+  }
 
   @Override
   protected void placeComponents(JPanel panel) {
@@ -65,18 +89,23 @@ public class SemanticGUI extends BaseGUI {
         false);
     GrammarAnalyzer grammarAnalyzer = new GrammarAnalyzer(new File(SemanticAnalyzer.grammarPath));
     SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
-    Pair<List<PToken>, List<Integer>> tempPair = grammarAnalyzer
-        .Analyzer(lexicalAnalyzer.Analyzer(inputTextArea.getText()));
-    semanticAnalyzer.analyzer(tempPair, grammarAnalyzer);
 
-    JButton grammarAnalyzeButton = new JButton("生成三地址码和四元式");
+    JButton grammarAnalyzeButton = new JButton("中间代码生成");
     grammarAnalyzeButton.setFont(buttonFont);
     grammarAnalyzeButton
         .setBounds(xBlankLen + inputFileButton.getX() + inputFileButton.getWidth(),
             outputLabel.getY() + outputLabel.getHeight() + yBlankLen, buttonWidth, buttonHeight);
     grammarAnalyzeButton.addActionListener(actionEvent -> {
+      Pair<List<PToken>, List<Integer>> tempPair = grammarAnalyzer
+          .Analyzer(lexicalAnalyzer.Analyzer(inputTextArea.getText()));
+      semanticAnalyzer
+          .analyzer(tempPair, grammarAnalyzer.getProductions(), grammarAnalyzer.getEndSymbols());
+      JFrame symbolListFrame = generateSymbolList(semanticAnalyzer);
+      symbolListFrame.setVisible(true);
       outputTextArea.setText(String.join("\n", semanticAnalyzer.getResults()));
+
     });
     panel.add(grammarAnalyzeButton);
   }
+
 }

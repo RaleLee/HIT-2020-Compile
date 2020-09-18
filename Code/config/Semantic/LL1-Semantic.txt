@@ -10,7 +10,7 @@ P -> D P
 P -> S P
 P -> ε
 T -> X #a40# C #a1#
-D -> T IDENTIFIER #a2# C ; | proc X IDENTIFIER #a3# ( M ) { P } #a52# | record IDENTIFIER #a4# { P }
+D -> T IDENTIFIER #a2# C ; | proc X IDENTIFIER #a3# ( M ) #a52# { P } | record IDENTIFIER #a4# { P }
 M -> X IDENTIFIER M' #a50# | ε #a51#
 M' -> , X IDENTIFIER M' #a50# | ε #a51#
 C -> [ NUM ] C #a6# | ε #a7#

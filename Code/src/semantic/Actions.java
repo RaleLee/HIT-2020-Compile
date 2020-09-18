@@ -94,7 +94,6 @@ public class Actions {
       semanticAnalyzer.enter(Identifier.lexeme, Identifier.type);
       semanticAnalyzer.retType = X.type;
     } catch (Exception e) {
-      // TODO: fill the exception condition ???
       System.out.println("Error at Line " + D.lineIndex + ":" + e.getMessage());
       semanticAnalyzer.setWrongEnd("Error at Line " + D.lineIndex + ":" + e.getMessage());
     }
@@ -104,10 +103,10 @@ public class Actions {
     PToken D = nowNodes.get(0);
     PToken record = nowNodes.get(1);
     PToken Identifier = nowNodes.get(2);
+    Identifier.setType("record");
     try {
       semanticAnalyzer.enter(Identifier.lexeme, Identifier.type);
     } catch (Exception e) {
-      // TODO: fill the exception condition ???
       System.out.println("Error at Line " + D.lineIndex + ":" + e.getMessage());
     }
   }
@@ -161,12 +160,12 @@ public class Actions {
     PToken S3 = nowNodes.get(9);
     semanticAnalyzer.backPatch(U1.quad, B.trueList);
     semanticAnalyzer.backPatch(U2.quad, B.falseList);
+    semanticAnalyzer.backPatch(semanticAnalyzer.nextQuad, W1.nextList);
     S1.setNextList(
         SemanticAnalyzer
             .mergeList(SemanticAnalyzer.mergeList(S2.nextList, W1.nextList), S3.nextList));
   }
 
-  // TODO: Action12~19
   private static void action14(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken Identifier = nowNodes.get(1);
     PToken E = nowNodes.get(3);
@@ -213,7 +212,7 @@ public class Actions {
             return;
           }
           semanticAnalyzer.addAnswers(
-              new ThreeAddr("call" + Identifier.lexeme + "," + semanticAnalyzer.paramQueue.size(),
+              new ThreeAddr("call " + Identifier.lexeme + "," + semanticAnalyzer.paramQueue.size(),
                   "call",
                   new String[]{Identifier.lexeme,
                       String.valueOf(semanticAnalyzer.paramQueue.size()), " "}));
@@ -236,6 +235,7 @@ public class Actions {
     semanticAnalyzer.backPatch(U1.quad, S1.nextList);
     semanticAnalyzer.backPatch(U2.quad, B.trueList);
     genGoto(String.valueOf(U1.quad), semanticAnalyzer);
+    semanticAnalyzer.backPatch(semanticAnalyzer.nextQuad, B.falseList);
   }
 
   private static void action17(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
@@ -244,12 +244,30 @@ public class Actions {
     genGoto("_", semanticAnalyzer);
   }
 
-  //  private static void action19(List<PToken> nowNodes,SemanticAnalyzer semanticAnalyzer){
-//    PToken
-//  }
+  private static void action19(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Bpl = nowNodes.get(0);
+    PToken U = nowNodes.get(2);
+    PToken O = nowNodes.get(3);
+    PToken Bpr = nowNodes.get(4);
+    Bpl.setTrueList(O.trueList);
+    Bpl.setFalseList(O.falseList);
+    Bpl.quad = U.quad;
+    Bpl.bpType = false;
+  }
+
   private static void action20(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken U = nowNodes.get(0);
     U.setQuad(semanticAnalyzer.nextQuad);
+  }
+
+  private static void action21(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken Opl = nowNodes.get(0);
+    PToken U = nowNodes.get(2);
+    PToken Q = nowNodes.get(3);
+    Opl.setTrueList(Q.trueList);
+    Opl.setFalseList(Q.falseList);
+    Opl.quad = U.quad;
+    Opl.bpType = true;
   }
 
   private static void action22(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
@@ -364,6 +382,8 @@ public class Actions {
       System.out.println("Error at Line " + E.lineIndex + ":" + "Mismatch Return Type!");
       semanticAnalyzer.setWrongEnd("Error at Line " + E.lineIndex + ":" + "Mismatch Return Type!");
     }
+    semanticAnalyzer
+        .addAnswers(new ThreeAddr("return " + E.addr, "return", new String[]{" ", " ", E.addr}));
   }
 
   private static void action38(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
@@ -495,21 +515,32 @@ public class Actions {
     PToken Identifier = nowNodes.get(2);
     PToken Mp = nowNodes.get(3);
     M.paramLen = Mp.paramLen + 1;
-    M.typeList = SemanticAnalyzer
-        .mergeList(Mp.typeList, SemanticAnalyzer.makeList(X.type));
+    M.paramNameList = SemanticAnalyzer
+        .mergeList(Mp.paramNameList, SemanticAnalyzer.makeList(Identifier.lexeme));
+    M.paramTypeList = SemanticAnalyzer
+        .mergeList(Mp.paramTypeList, SemanticAnalyzer.makeList(X.type));
   }
 
   private static void action51(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken M = nowNodes.get(0);
     M.paramLen = 0;
-    M.typeList.clear();
+    M.paramNameList.clear();
+    M.paramTypeList.clear();
   }
 
   private static void action52(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken D = nowNodes.get(0);
     PToken Identifier = nowNodes.get(3);
     PToken M = nowNodes.get(5);
-    semanticAnalyzer.functionList.put(Identifier.lexeme, new Pair<>(M.typeList, M.paramLen));
+    for (int ind = 0; ind < M.paramLen; ind++) {
+      try {
+        semanticAnalyzer.enter(M.paramNameList.get(ind), M.paramTypeList.get(ind));
+      } catch (Exception e) {
+        System.out.println("Error at Line " + D.lineIndex + ":" + e.getMessage());
+        semanticAnalyzer.setWrongEnd("Error at Line " + D.lineIndex + ":" + e.getMessage());
+      }
+    }
+    semanticAnalyzer.functionList.put(Identifier.lexeme, new Pair<>(M.paramTypeList, M.paramLen));
   }
 
   private static void action53(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
@@ -520,6 +551,44 @@ public class Actions {
   private static void action54(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
     PToken E = nowNodes.get(2);
     semanticAnalyzer.addParamQueue(new Pair<>(E.addr, E.type));
+  }
+
+  private static void action55(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken B = nowNodes.get(0);
+    PToken O = nowNodes.get(1);
+    PToken Bp = nowNodes.get(1);
+    B.setTrueList(SemanticAnalyzer.mergeList(O.trueList, Bp.trueList));
+    if (Bp.falseList.size() != 0) {
+      B.setFalseList(Bp.falseList);
+    } else {
+      B.setFalseList(O.falseList);
+    }
+    if (Bp.bpType != null) {
+      if (Bp.bpType) {
+        semanticAnalyzer.backPatch(Bp.quad, O.trueList);
+      } else {
+        semanticAnalyzer.backPatch(Bp.quad, O.falseList);
+      }
+    }
+  }
+
+  private static void action56(List<PToken> nowNodes, SemanticAnalyzer semanticAnalyzer) {
+    PToken O = nowNodes.get(0);
+    PToken Q = nowNodes.get(1);
+    PToken Op = nowNodes.get(2);
+    O.setFalseList(SemanticAnalyzer.mergeList(Q.falseList, Op.falseList));
+    if (Op.trueList.size() != 0) {
+      O.setTrueList(Op.trueList);
+    } else {
+      O.setTrueList(Q.trueList);
+    }
+    if (Op.bpType != null) {
+      if (Op.bpType) {
+        semanticAnalyzer.backPatch(Op.quad, Q.trueList);
+      } else {
+        semanticAnalyzer.backPatch(Op.quad, Q.falseList);
+      }
+    }
   }
 
   //按照父亲——从左兄弟到自己的顺序存放的，目前action需要的节点的编号
@@ -571,8 +640,14 @@ public class Actions {
       case 17:
         action17(nowNodes, semanticAnalyzer);
         break;
+      case 19:
+        action19(nowNodes, semanticAnalyzer);
+        break;
       case 20:
         action20(nowNodes, semanticAnalyzer);
+        break;
+      case 21:
+        action21(nowNodes, semanticAnalyzer);
         break;
       case 22:
         action22(nowNodes, semanticAnalyzer);
@@ -669,6 +744,12 @@ public class Actions {
         break;
       case 54:
         action54(nowNodes, semanticAnalyzer);
+        break;
+      case 55:
+        action55(nowNodes, semanticAnalyzer);
+        break;
+      case 56:
+        action56(nowNodes, semanticAnalyzer);
         break;
       default:
         System.out.println("ERROR ACTION!");

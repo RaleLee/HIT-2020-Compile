@@ -13,25 +13,21 @@ public class PToken {
   public String lexeme = null;
   public String type = null;
   public String array = null;
+  public Boolean bpType = null;
+  public String addr = null;
 
-  public void setArray(String array) {
-    this.array = array;
-  }
 
   public int width = 0;
   public List<Integer> trueList = new ArrayList<>();
   public List<Integer> falseList = new ArrayList<>();
   public List<Integer> nextList = new ArrayList<>();
-  public List<String> typeList = new ArrayList<>();
+  public List<String> paramTypeList = new ArrayList<>();
+  public List<String> paramNameList = new ArrayList<>();
   public int quad = 0;
   public int paramLen = 0;
 
-  public void setLineIndex(int lineIndex) {
-    this.lineIndex = lineIndex;
-  }
-
-  public void setLexeme(String lexeme) {
-    this.lexeme = lexeme;
+  public void setArray(String array) {
+    this.array = array;
   }
 
   public void setType(String type) {
@@ -62,7 +58,6 @@ public class PToken {
     this.addr = addr;
   }
 
-  public String addr = null;
 
   public PToken(String token, int lineIndex) {
     this.token = token;
